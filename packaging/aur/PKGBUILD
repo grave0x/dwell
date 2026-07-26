@@ -1,0 +1,31 @@
+# Maintainer: grave0x <grave@grave0x>
+# Contributor: grave0x <grave@grave0x>
+
+pkgname=dwell
+pkgver={{VERSION}}
+pkgrel=1
+pkgdesc="Dotfile manager with type-safe modules, cross-platform packages, and a plugin system"
+arch=('x86_64' 'aarch64')
+url="https://github.com/grave0x/dwell"
+license=('MIT')
+depends=('git')
+makedepends=('cargo')
+source=("$url/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cd "$srcdir/dwell-$pkgver"
+  cargo build --release --workspace
+}
+
+check() {
+  cd "$srcdir/dwell-$pkgver"
+  cargo test --workspace
+}
+
+package() {
+  cd "$srcdir/dwell-$pkgver"
+  install -Dm755 target/release/dwell-cli "$pkgdir/usr/bin/dwell"
+  install -Dm644 README.md "$pkgdir/usr/share/doc/dwell/README.md"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/dwell/LICENSE"
+}

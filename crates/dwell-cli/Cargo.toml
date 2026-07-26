@@ -3,6 +3,22 @@ name = "dwell-cli"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+description = "Unify your dotfiles across machines with type-safe modules, cross-platform packages, and a plugin system"
+homepage.workspace = true
+repository.workspace = true
+
+[package.metadata.deb]
+maintainer = "grave0x <grave@grave0x>"
+extended-description = """\
+dwell is a dotfile manager that helps you unify configuration across machines. \
+It supports multiple template engines (Handlebars, Rhai, Tera), cross-platform \
+package management, secret encryption with age, and a plugin system with WASM and Lua.\
+"""
+section = "utils"
+priority = "optional"
+assets = [
+    ["target/release/dwell-cli", "usr/bin/dwell", "755"],
+]
 
 [dependencies]
 dwell-core.workspace = true

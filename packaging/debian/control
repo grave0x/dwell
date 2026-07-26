@@ -1,0 +1,15 @@
+Source: dwell
+Section: utils
+Priority: optional
+Maintainer: grave0x <grave@grave0x>
+Build-Depends: debhelper (>= 13), cargo, rustc
+Standards-Version: 4.6.2
+Homepage: https://github.com/grave0x/dwell
+
+Package: dwell
+Architecture: amd64 arm64
+Depends: ${shlibs:Depends}, ${misc:Depends}, git
+Description: Dotfile manager with type-safe modules and plugins
+ dwell unifies your dotfiles across machines with multiple
+ template engines (Handlebars, Rhai, Tera), cross-platform
+ package management, age encryption, and a WASM/Lua plugin system.

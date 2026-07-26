@@ -1,13 +1,29 @@
 # dwell — unify your dotfiles
 
+[![CI](https://github.com/grave0x/dwell/actions/workflows/ci.yml/badge.svg)](https://github.com/grave0x/dwell/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Rust](https://img.shields.io/badge/rust-1.80%2B-orange)](https://www.rust-lang.org)
+
 A chezmoi-inspired dotfile manager written in Rust. Type-safe modules, cross-platform packages, and a plugin system.
+
+## Install
+
+```bash
+# One-liner (Linux x86_64/arm64, macOS)
+curl -fsSL https://github.com/grave0x/dwell/raw/main/scripts/install.sh | sh
+
+# Or with Cargo
+cargo install --git https://github.com/grave0x/dwell
+
+# Or pick your package manager
+# Arch Linux:     yay -S dwell
+# Debian/Ubuntu:  sudo dpkg -i dwell_*.deb
+# Homebrew:       brew install grave0x/tap/dwell
+```
 
 ## Quick start
 
 ```bash
-# Install
-cargo install --git https://github.com/grave0x/dwell
-
 # Initialize
 dwell init
 
