@@ -38,6 +38,13 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
         crate::Commands::Setup { action } => setup::run(&cli_ref, &cfg, action),
         crate::Commands::Deploy { source, no_deps, no_packages, dry_run } => deploy::run(&cli_ref, &cfg, source, no_deps, no_packages, dry_run),
         crate::Commands::Reset { path, all, stray, source, dry_run } => reset::run(&cli_ref, &cfg, path, all, stray, source, dry_run),
+        crate::Commands::Completion { shell } => {
+            use clap::CommandFactory;
+            let mut cmd = crate::Cli::command();
+            let name = cmd.get_name().to_string();
+            clap_complete::generate(shell, &mut cmd, name, &mut std::io::stdout());
+            Ok(())
+        }
         crate::Commands::Module { .. } => {
             eprintln!("Module management — Phase 2 (coming soon)");
             Ok(())

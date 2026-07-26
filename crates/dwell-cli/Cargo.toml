@@ -41,6 +41,7 @@ tracing-subscriber.workspace = true
 dirs.workspace = true
 hostname = "0.4"
 git2.workspace = true
+clap_complete = "4"
 
 [dev-dependencies]
 git2.workspace = true
