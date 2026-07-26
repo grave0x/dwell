@@ -115,9 +115,14 @@ impl SourceDir {
             ))?;
 
         let relative_str = relative.to_string_lossy();
-        // Apply prefix: .bashrc → dot_bashrc, .config/nvim/init.lua → dot_config/nvim/init.lua
-        let source_name = if relative_str.starts_with('.') {
-            // .config/nvim/init.lua → dot_config/nvim/init.lua
+        // Check for special paths that map to custom dot_ prefixes
+        // e.g. .config/powershell/ → dot_powershell/
+        let source_name = if relative_str.starts_with(".config/powershell/") {
+            // .config/powershell/profile.ps1 → dot_powershell/profile.ps1
+            let stripped = relative_str.strip_prefix(".config/").unwrap_or(&relative_str);
+            format!("dot_{}", stripped)
+        } else if relative_str.starts_with('.') {
+            // Apply general prefix: .bashrc → dot_bashrc, .config/nvim/init.lua → dot_config/nvim/init.lua
             let stripped = relative_str.strip_prefix('.').unwrap_or(&relative_str);
             format!("dot_{}", stripped)
         } else {

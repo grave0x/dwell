@@ -187,6 +187,18 @@ fn test_source_to_target_edge_cases() {
         dwell_core::source_to_target("run_once_install-packages.sh", &home),
         PathBuf::from("/home/user/install-packages.sh")
     );
+
+    // PowerShell profile
+    assert_eq!(
+        dwell_core::source_to_target("dot_powershell/Microsoft.PowerShell_profile.ps1", &home),
+        PathBuf::from("/home/user/.config/powershell/Microsoft.PowerShell_profile.ps1")
+    );
+
+    // PowerShell profile with template
+    assert_eq!(
+        dwell_core::source_to_target("dot_powershell/Microsoft.PowerShell_profile.ps1.tmpl", &home),
+        PathBuf::from("/home/user/.config/powershell/Microsoft.PowerShell_profile.ps1")
+    );
 }
 
 #[test]
@@ -196,6 +208,41 @@ fn test_ignore_patterns() {
     assert!(ignore.is_ignored("secret.key"));
     assert!(ignore.is_ignored("templates/something"));
     assert!(!ignore.is_ignored("src/main.rs"));
+}
+
+#[test]
+fn test_powershell_profile_workflow() {
+    let tmp = TempDir::new();
+    let home = tmp.path.join("home");
+    let source = tmp.path.join("source");
+    let ps_dir = home.join(".config/powershell");
+    fs::create_dir_all(&ps_dir).unwrap();
+    fs::create_dir_all(&source).unwrap();
+
+    // Create a PowerShell profile
+    let ps_content = r#"
+$env:EDITOR = "nvim"
+oh-my-posh init pwsh
+"#;
+    let ps_path = ps_dir.join("Microsoft.PowerShell_profile.ps1");
+    fs::write(&ps_path, ps_content).unwrap();
+
+    // Add it
+    let sd = dwell_store::SourceDir::open(&source).unwrap();
+    let entry = sd.add_file(&ps_path, &home).unwrap();
+    assert_eq!(entry.source_path, "dot_powershell/Microsoft.PowerShell_profile.ps1");
+    assert!(!entry.encrypted);
+
+    // Verify source file exists with correct content
+    let source_file = source.join("dot_powershell/Microsoft.PowerShell_profile.ps1");
+    assert!(source_file.exists());
+    assert_eq!(fs::read_to_string(&source_file).unwrap(), ps_content);
+
+    // Verify source_to_target maps back correctly
+    assert_eq!(
+        dwell_core::source_to_target("dot_powershell/Microsoft.PowerShell_profile.ps1", &home),
+        ps_path
+    );
 }
 
 #[test]

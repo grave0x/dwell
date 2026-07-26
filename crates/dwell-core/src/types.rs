@@ -123,10 +123,19 @@ pub fn hash_content(content: &[u8]) -> String {
     hex::encode(hasher.finalize())
 }
 
+/// Special mappings for dotfile prefixes that don't just take a dot prefix.
+///
+/// For example, `dot_powershell/profile.ps1` should map to
+/// `~/.config/powershell/profile.ps1`, not `~/.powershell/profile.ps1`.
+const SPECIAL_PREFIX_MAP: &[(&str, &str)] = &[
+    ("powershell/", ".config/powershell/"),
+];
+
 /// Convert a dot_-prefixed source name to its target path.
 ///
 /// `dot_config/hypr/hyprland.conf` → `/home/user/.config/hypr/hyprland.conf`
 /// `dot_bashrc` → `/home/user/.bashrc`
+/// `dot_powershell/profile.ps1` → `/home/user/.config/powershell/profile.ps1`
 pub fn source_to_target(source_path: &str, home: &PathBuf) -> PathBuf {
     // Determine if this is a dotfile (starts with `dot_` or `private_dot_`)
     let is_dotfile = source_path.starts_with("dot_") || source_path.starts_with("private_dot_");
@@ -151,13 +160,25 @@ pub fn source_to_target(source_path: &str, home: &PathBuf) -> PathBuf {
         .or_else(|| relative.strip_prefix("symlink_"))
         .unwrap_or(relative);
 
-    // Only prepend dot if the original was a dotfile
+    // Check special prefix mappings first
     let target_relative = if is_dotfile {
-        if let Some((first, rest)) = relative.split_once('/') {
-            format!(".{}/{}", first, rest)
-        } else {
-            format!(".{}", relative)
-        }
+        SPECIAL_PREFIX_MAP.iter()
+            .find_map(|(from, to)| {
+                if relative.starts_with(from) {
+                    let rest = relative.strip_prefix(from).unwrap_or(relative);
+                    Some(format!("{}{}", to, rest))
+                } else {
+                    None
+                }
+            })
+            .unwrap_or_else(|| {
+                // Default: prepend a dot to the first path component
+                if let Some((first, rest)) = relative.split_once('/') {
+                    format!(".{}/{}", first, rest)
+                } else {
+                    format!(".{}", relative)
+                }
+            })
     } else {
         relative.to_string()
     };
@@ -198,5 +219,35 @@ mod tests {
         let home = PathBuf::from("/home/user");
         let target = source_to_target("dot_config/nvim/init.lua", &home);
         assert_eq!(target, PathBuf::from("/home/user/.config/nvim/init.lua"));
+    }
+
+    #[test]
+    fn test_source_to_target_powershell() {
+        let home = PathBuf::from("/home/user");
+        let target = source_to_target("dot_powershell/Microsoft.PowerShell_profile.ps1", &home);
+        assert_eq!(
+            target,
+            PathBuf::from("/home/user/.config/powershell/Microsoft.PowerShell_profile.ps1")
+        );
+    }
+
+    #[test]
+    fn test_source_to_target_powershell_tmpl() {
+        let home = PathBuf::from("/home/user");
+        let target = source_to_target("dot_powershell/Microsoft.PowerShell_profile.ps1.tmpl", &home);
+        assert_eq!(
+            target,
+            PathBuf::from("/home/user/.config/powershell/Microsoft.PowerShell_profile.ps1")
+        );
+    }
+
+    #[test]
+    fn test_source_to_target_powershell_templates_dir() {
+        let home = PathBuf::from("/home/user");
+        let target = source_to_target("dot_powershell/templates/functions.ps1", &home);
+        assert_eq!(
+            target,
+            PathBuf::from("/home/user/.config/powershell/templates/functions.ps1")
+        );
     }
 }
