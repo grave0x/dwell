@@ -15,7 +15,7 @@ pub fn run(
     source: Option<PathBuf>,
     dry_run: bool,
 ) -> dwell_core::Result<()> {
-    let out = Output::new(cli.json, cli.verbose, cli.quiet);
+    let out = Output::new(cli.json, cli.verbose, cli.quiet, cli.log_level.clone());
     let source_dir = crate::commands::resolve_source(cli, source)?;
     let home = crate::commands::resolve_home();
 

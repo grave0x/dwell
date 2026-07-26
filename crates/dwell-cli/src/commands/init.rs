@@ -14,7 +14,7 @@ pub fn run(
 ) -> dwell_core::Result<()> {
     let _ = _cfg;
     let _ = _remote_url;
-    let out = Output::new(cli.json, cli.verbose, cli.quiet);
+    let out = Output::new(cli.json, cli.verbose, cli.quiet, cli.log_level.clone());
 
     let source_dir = source.unwrap_or_else(|| {
         dirs::data_dir()

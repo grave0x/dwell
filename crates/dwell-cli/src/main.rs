@@ -32,6 +32,14 @@ pub struct Cli {
     #[arg(long)]
     pub json: bool,
 
+    /// Log file path (default: stderr)
+    #[arg(long)]
+    pub log_file: Option<PathBuf>,
+
+    /// Log level override [possible values: error, warn, info, debug, trace]
+    #[arg(long)]
+    pub log_level: Option<String>,
+
     #[command(subcommand)]
     pub command: Commands,
 }
@@ -326,21 +334,40 @@ pub enum GenerationCommand {
 fn main() {
     let cli = Cli::parse();
 
-    // Configure logging
-    let level = match cli.verbose {
-        0 => "warn",
-        1 => "info",
-        2 => "debug",
-        _ => "trace",
-    };
+    // Determine log level
+    let level = cli.log_level.clone().unwrap_or_else(|| {
+        match cli.verbose {
+            0 => if cli.quiet { "error" } else { "warn" },
+            1 => "info",
+            2 => "debug",
+            _ => "trace",
+        }.to_string()
+    });
 
-    tracing_subscriber::fmt()
+    // Configure tracing subscriber with optional file output
+    let builder = tracing_subscriber::fmt()
         .with_env_filter(format!("dwell={}", level))
-        .with_writer(std::io::stderr)
-        .without_time()
-        .init();
+        .with_target(false)
+        .without_time();
+
+    if let Some(ref log_path) = cli.log_file {
+        use std::fs::OpenOptions;
+        let file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(log_path)
+            .unwrap_or_else(|e| {
+                eprintln!("dwell: warning: cannot open log file {}: {}", log_path.display(), e);
+                // Fallback to stderr using /dev/null as a dummy that won't matter
+                std::fs::File::create("/dev/null").unwrap()
+            });
+        builder.with_writer(std::sync::Mutex::new(file)).init();
+    } else {
+        builder.with_writer(std::io::stderr).init();
+    }
 
     if let Err(e) = commands::run(cli) {
+        // Always print fatal errors to stderr regardless of log config
         eprintln!("dwell: error: {}", e);
         std::process::exit(1);
     }

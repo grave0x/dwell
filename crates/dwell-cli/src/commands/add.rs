@@ -5,7 +5,7 @@ use crate::output::Output;
 
 pub fn run(cli: &CliRef, _cfg: &dwell_core::Config, path: PathBuf) -> dwell_core::Result<()> {
     let _ = _cfg;
-    let out = Output::new(cli.json, cli.verbose, cli.quiet);
+    let out = Output::new(cli.json, cli.verbose, cli.quiet, cli.log_level.clone());
     let source_dir = resolve_source(cli, None)?;
     let home = resolve_home();
 
