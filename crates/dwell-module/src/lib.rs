@@ -2,8 +2,9 @@
 //!
 //! Modules generate dotfile entries from typed, validated user options,
 //! inspired by home-manager's module system but using TOML + Rhai/Lua
-//! instead of Nix. Full implementation in Phase 2.
+//! instead of Nix.
 
+pub mod builtins;
 pub mod module;
 pub mod validation;
 

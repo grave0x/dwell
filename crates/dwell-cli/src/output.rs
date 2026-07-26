@@ -10,11 +10,17 @@ pub struct Output {
 
 impl Output {
     pub fn new(json_mode: bool, verbose: u8, quiet: bool) -> Self {
-        Output { json_mode, verbose, quiet }
+        Output {
+            json_mode,
+            verbose,
+            quiet,
+        }
     }
 
     pub fn info(&self, msg: &str) {
-        if self.quiet { return; }
+        if self.quiet {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"info","message":"{}"}}"#, msg);
         } else {
@@ -23,7 +29,9 @@ impl Output {
     }
 
     pub fn success(&self, msg: &str) {
-        if self.quiet { return; }
+        if self.quiet {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"success","message":"{}"}}"#, msg);
         } else {
@@ -64,8 +72,12 @@ impl Output {
         if result.success {
             eprintln!(" {} {}", icon, result.path.display());
         } else {
-            eprintln!(" {} {} — {}", style("✗").red(), result.path.display(),
-                result.error.as_deref().unwrap_or("unknown error"));
+            eprintln!(
+                " {} {} — {}",
+                style("✗").red(),
+                result.path.display(),
+                result.error.as_deref().unwrap_or("unknown error")
+            );
         }
     }
 }

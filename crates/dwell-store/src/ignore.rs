@@ -63,7 +63,10 @@ impl Pattern {
     fn matches(&self, path: &str) -> bool {
         match self {
             Pattern::Glob(g) => {
-                let glob = g.replace("**", ".*").replace('*', "[^/]*").replace('?', ".");
+                let glob = g
+                    .replace("**", ".*")
+                    .replace('*', "[^/]*")
+                    .replace('?', ".");
                 regex::Regex::new(&format!("^{}$", glob))
                     .map(|re| re.is_match(path))
                     .unwrap_or(false)
@@ -75,7 +78,6 @@ impl Pattern {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {
