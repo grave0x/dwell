@@ -58,8 +58,12 @@ impl TemplateEngine for RhaiEngine {
 
 fn inject_value(scope: &mut rhai::Scope, key: &str, value: &serde_json::Value) {
     match value {
-        serde_json::Value::Null => { scope.push(key, ()); }
-        serde_json::Value::Bool(b) => { scope.push(key, *b); }
+        serde_json::Value::Null => {
+            scope.push(key, ());
+        }
+        serde_json::Value::Bool(b) => {
+            scope.push(key, *b);
+        }
         serde_json::Value::Number(n) => {
             if let Some(i) = n.as_i64() {
                 scope.push(key, i);
@@ -67,8 +71,14 @@ fn inject_value(scope: &mut rhai::Scope, key: &str, value: &serde_json::Value) {
                 scope.push(key, f);
             }
         }
-        serde_json::Value::String(s) => { scope.push(key, s.clone()); }
-        serde_json::Value::Array(_) => { scope.push(key, value.to_string()); }
-        serde_json::Value::Object(_) => { scope.push(key, value.to_string()); }
+        serde_json::Value::String(s) => {
+            scope.push(key, s.clone());
+        }
+        serde_json::Value::Array(_) => {
+            scope.push(key, value.to_string());
+        }
+        serde_json::Value::Object(_) => {
+            scope.push(key, value.to_string());
+        }
     }
 }

@@ -39,9 +39,9 @@ impl PackageManager for ApkBackend {
         let output = Command::new("apk")
             .args(["info", "--installed"])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(
-                format!("apk info failed: {}", e)
-            ))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("apk info failed: {}", e))
+            })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let mut packages = Vec::new();
@@ -71,9 +71,9 @@ impl PackageManager for ApkBackend {
         let status = Command::new("apk")
             .args(["add", package])
             .status()
-            .map_err(|e| dwell_core::DwellError::PackageManager(
-                format!("apk add failed: {}", e)
-            ))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("apk add failed: {}", e))
+            })?;
         Ok(status.success())
     }
 
@@ -81,9 +81,9 @@ impl PackageManager for ApkBackend {
         let status = Command::new("apk")
             .args(["del", package])
             .status()
-            .map_err(|e| dwell_core::DwellError::PackageManager(
-                format!("apk del failed: {}", e)
-            ))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("apk del failed: {}", e))
+            })?;
         Ok(status.success())
     }
 
@@ -91,9 +91,9 @@ impl PackageManager for ApkBackend {
         let output = Command::new("apk")
             .args(["search", query])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(
-                format!("apk search failed: {}", e)
-            ))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("apk search failed: {}", e))
+            })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let mut packages = Vec::new();

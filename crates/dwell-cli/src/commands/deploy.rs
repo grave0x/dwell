@@ -27,7 +27,10 @@ pub fn run(
             deps.save(&source_dir).ok();
             let all_req = deps.all_requires();
             let all_tools = deps.all_tools();
-            out.info(&format!("  Found {} entries with dependencies", deps.deps.len()));
+            out.info(&format!(
+                "  Found {} entries with dependencies",
+                deps.deps.len()
+            ));
             if !all_req.is_empty() {
                 out.info(&format!("  Requires: {}", all_req.join(", ")));
             }
@@ -59,18 +62,25 @@ pub fn run(
         if manifest_path.exists() {
             let reg = dwell_package::PackageManagerRegistry::new();
             if let Some(backend) = reg.detect() {
-                out.info(&format!("  Restoring packages via {}", backend.display_name()));
+                out.info(&format!(
+                    "  Restoring packages via {}",
+                    backend.display_name()
+                ));
                 if !dry_run {
                     // Read manifest and install all captured packages
                     if let Ok(content) = std::fs::read_to_string(&manifest_path) {
                         if let Ok(data) = serde_json::from_str::<serde_json::Value>(&content) {
-                            if let Some(sys) = data.get("sys_packages").and_then(|v| v.as_object()) {
+                            if let Some(sys) = data.get("sys_packages").and_then(|v| v.as_object())
+                            {
                                 for (_backend_id, pkgs) in sys {
                                     if let Some(list) = pkgs.as_array() {
                                         for pkg in list {
                                             if let Some(name) = pkg.as_str() {
                                                 if let Err(e) = backend.install(name) {
-                                                    out.warn(&format!("    Failed: {}: {}", name, e));
+                                                    out.warn(&format!(
+                                                        "    Failed: {}: {}",
+                                                        name, e
+                                                    ));
                                                 }
                                             }
                                         }
@@ -100,18 +110,34 @@ pub fn run(
             .unwrap_or_else(|| PathBuf::from("/tmp/dwell-state.json"));
 
         let mut data = serde_json::Map::new();
-        data.insert("home".into(), serde_json::Value::String(home.to_string_lossy().to_string()));
-        data.insert("hostname".into(), serde_json::Value::String(
-            hostname::get().unwrap_or_default().to_string_lossy().to_string()
-        ));
-        data.insert("os".into(), serde_json::Value::String(std::env::consts::OS.to_string()));
+        data.insert(
+            "home".into(),
+            serde_json::Value::String(home.to_string_lossy().to_string()),
+        );
+        data.insert(
+            "hostname".into(),
+            serde_json::Value::String(
+                hostname::get()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .to_string(),
+            ),
+        );
+        data.insert(
+            "os".into(),
+            serde_json::Value::String(std::env::consts::OS.to_string()),
+        );
 
-        let mut deployer = dwell_deploy::Deployer::new(home.clone(), &state_path, false)?
-            .with_force(true);
-        let results = deployer.apply_all(&entries, &source_dir, &serde_json::Value::Object(data))?;
+        let mut deployer =
+            dwell_deploy::Deployer::new(home.clone(), &state_path, false)?.with_force(true);
+        let results =
+            deployer.apply_all(&entries, &source_dir, &serde_json::Value::Object(data))?;
         deployer.save_state(&state_path)?;
 
-        let applied = results.iter().filter(|r| r.action != dwell_core::ApplyAction::Skipped).count();
+        let applied = results
+            .iter()
+            .filter(|r| r.action != dwell_core::ApplyAction::Skipped)
+            .count();
         out.success(&format!("  {} entries applied", applied));
     } else {
         out.info("  (dry-run — would apply dotfiles)");

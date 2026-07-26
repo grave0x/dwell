@@ -21,6 +21,23 @@ cargo install --git https://github.com/grave0x/dwell
 # Homebrew:       brew install grave0x/tap/dwell
 ```
 
+### Shell completions
+
+```bash
+# Bash
+dwell completion bash | sudo tee /usr/share/bash-completion/completions/dwell
+
+# Zsh
+mkdir -p ~/.zfunc && dwell completion zsh > ~/.zfunc/_dwell
+echo 'fpath+=~/.zfunc' >> ~/.zshrc
+
+# Fish
+dwell completion fish > ~/.config/fish/completions/dwell.fish
+
+# PowerShell
+dwell completion powershell > _dwell.ps1
+```
+
 ## Quick start
 
 ```bash

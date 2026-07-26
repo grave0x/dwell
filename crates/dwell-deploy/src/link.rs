@@ -9,7 +9,11 @@ use dwell_core::{DwellError, Result};
 /// Create a symlink from source to target.
 pub fn link_file(source: &Path, target: &Path, dry_run: bool) -> Result<()> {
     if dry_run {
-        tracing::info!("[dry-run] Would symlink: {} → {}", source.display(), target.display());
+        tracing::info!(
+            "[dry-run] Would symlink: {} → {}",
+            source.display(),
+            target.display()
+        );
         return Ok(());
     }
 
@@ -23,9 +27,7 @@ pub fn link_file(source: &Path, target: &Path, dry_run: bool) -> Result<()> {
         fs::create_dir_all(parent)?;
     }
 
-    unix::fs::symlink(source, target).map_err(|e| {
-        DwellError::Io(e)
-    })
+    unix::fs::symlink(source, target).map_err(DwellError::Io)
 }
 
 /// Remove a symlink target if it's a symlink managed by dwell.

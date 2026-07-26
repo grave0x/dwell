@@ -187,6 +187,12 @@ pub enum Commands {
         #[arg(long)]
         dry_run: bool,
     },
+
+    /// Generate shell completion scripts
+    Completion {
+        /// Shell to generate completions for [possible values: bash, zsh, fish, powershell, elvish]
+        shell: clap_complete::Shell,
+    },
 }
 
 #[derive(Subcommand)]

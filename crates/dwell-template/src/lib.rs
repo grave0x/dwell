@@ -15,8 +15,8 @@ pub use tera_engine::TeraEngine;
 pub enum TemplateDialect {
     Handlebars,
     Rhai,
-    GoTemplate,    // planned
-    Tera,          // planned
+    GoTemplate, // planned
+    Tera,       // planned
 }
 
 impl TemplateDialect {
