@@ -19,9 +19,9 @@ impl SourceDir {
         let chezmoi_ignore = root.join(".chezmoiignore");
 
         let ignore = if ignore_path.exists() {
-            IgnorePatterns::from_file(&ignore_path).map_err(|e| dwell_core::DwellError::Io(e))?
+            IgnorePatterns::from_file(&ignore_path).map_err(dwell_core::DwellError::Io)?
         } else if chezmoi_ignore.exists() {
-            IgnorePatterns::from_file(&chezmoi_ignore).map_err(|e| dwell_core::DwellError::Io(e))?
+            IgnorePatterns::from_file(&chezmoi_ignore).map_err(dwell_core::DwellError::Io)?
         } else {
             IgnorePatterns::default()
         };
@@ -96,7 +96,7 @@ impl SourceDir {
     /// Read the raw content of a source entry.
     pub fn read_entry(&self, source_path: &str) -> Result<Vec<u8>> {
         let full_path = self.root.join(source_path);
-        fs::read(&full_path).map_err(|e| dwell_core::DwellError::Io(e))
+        fs::read(&full_path).map_err(dwell_core::DwellError::Io)
     }
 
     /// Add a file from the filesystem to the source directory.

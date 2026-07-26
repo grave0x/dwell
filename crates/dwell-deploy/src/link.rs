@@ -27,7 +27,7 @@ pub fn link_file(source: &Path, target: &Path, dry_run: bool) -> Result<()> {
         fs::create_dir_all(parent)?;
     }
 
-    unix::fs::symlink(source, target).map_err(|e| DwellError::Io(e))
+    unix::fs::symlink(source, target).map_err(DwellError::Io)
 }
 
 /// Remove a symlink target if it's a symlink managed by dwell.

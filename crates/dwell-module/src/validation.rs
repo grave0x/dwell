@@ -236,14 +236,6 @@ mod tests {
     fn test_enum_validation() {
         let v = Validator::new();
         let values = serde_json::json!({"color": "red"});
-        let opt = ModuleOption {
-            name: "color".into(),
-            option_type: OptionType::Enum(vec!["red".into(), "blue".into()]),
-            default: None,
-            description: "Color".into(),
-            example: None,
-            required: true,
-        };
         // Create a temporary module that returns this option
         struct ColorModule;
         impl Module for ColorModule {
