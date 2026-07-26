@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// A source entry — a tracked item in the dotfile repository.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,8 +48,6 @@ impl EntryKind {
             EntryKind::Remove
         } else if name.starts_with("symlink_") {
             EntryKind::Symlink
-        } else if name.ends_with(".tmpl") {
-            EntryKind::File
         } else {
             EntryKind::File
         }
@@ -127,7 +125,7 @@ pub fn hash_content(content: &[u8]) -> String {
 ///
 /// `dot_config/hypr/hyprland.conf` → `/home/user/.config/hypr/hyprland.conf`
 /// `dot_bashrc` → `/home/user/.bashrc`
-pub fn source_to_target(source_path: &str, home: &PathBuf) -> PathBuf {
+pub fn source_to_target(source_path: &str, home: &Path) -> PathBuf {
     // Determine if this is a dotfile (starts with `dot_` or `private_dot_`)
     let is_dotfile = source_path.starts_with("dot_") || source_path.starts_with("private_dot_");
 

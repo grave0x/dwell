@@ -76,6 +76,7 @@ impl Config {
     }
 }
 
+#[allow(clippy::manual_strip)]
 fn expand_tilde(path: &Path) -> std::path::PathBuf {
     let s = path.to_string_lossy();
     if s.starts_with('~') {
@@ -140,67 +141,42 @@ impl Default for DataConfig {
 /// Module configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct ModuleConfig {
     /// Enabled modules with their options.
     pub enabled: HashMap<String, toml::Value>,
 }
 
-impl Default for ModuleConfig {
-    fn default() -> Self {
-        ModuleConfig {
-            enabled: HashMap::new(),
-        }
-    }
-}
 
 /// Package configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct PackageConfig {
     /// System packages to install.
     pub system: Vec<String>,
 }
 
-impl Default for PackageConfig {
-    fn default() -> Self {
-        PackageConfig {
-            system: Vec::new(),
-        }
-    }
-}
 
 /// Secret configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct SecretConfig {
     /// Encrypted files to decrypt.
     pub files: Vec<String>,
 }
 
-impl Default for SecretConfig {
-    fn default() -> Self {
-        SecretConfig {
-            files: Vec::new(),
-        }
-    }
-}
 
 /// Plugin configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
+#[derive(Default)]
 pub struct PluginConfig {
     pub wasm: Vec<String>,
     pub lua: Vec<String>,
 }
 
-impl Default for PluginConfig {
-    fn default() -> Self {
-        PluginConfig {
-            wasm: Vec::new(),
-            lua: Vec::new(),
-        }
-    }
-}
 
 /// Generation (snapshot) configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]

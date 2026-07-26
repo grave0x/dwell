@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use dwell_core::{source_to_target, Entry, EntryKind};
 use dwell_store::SourceDir;
@@ -97,7 +97,7 @@ pub fn run(
             .collect();
 
         let mut stray_count = 0;
-        for (target, _entry) in &state.entries {
+        for target in state.entries.keys() {
             if !managed_targets.contains(target) && target.exists() {
                 out.warn(&format!("  Stray: {}", target.display()));
                 if !dry_run {
@@ -123,8 +123,8 @@ pub fn run(
 fn reset_entry(
     sd: &SourceDir,
     entry: &Entry,
-    _source_root: &PathBuf,
-    home: &PathBuf,
+    _source_root: &Path,
+    home: &Path,
     out: &Output,
 ) -> dwell_core::Result<()> {
     let target = source_to_target(&entry.source_path, home);

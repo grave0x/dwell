@@ -209,8 +209,11 @@ fn cmd_capture(
         let mut bins = vec![];
         for dir in bin_dirs.into_iter().flatten() {
             if dir.exists() {
-                for entry in fs::read_dir(&dir).into_iter().flatten() {
-                    if let Ok(e) = entry {
+                let read_dir = match fs::read_dir(&dir) {
+                    Ok(rd) => rd,
+                    Err(_) => continue,
+                };
+                for e in read_dir.flatten() {
                         if e.file_type().map(|t| t.is_file() || t.is_symlink()).unwrap_or(false) {
                             // Only include non-standard entries (skip distro-managed files)
                             let name = e.file_name().to_string_lossy().to_string();
@@ -218,7 +221,6 @@ fn cmd_capture(
                                 bins.push(name);
                             }
                         }
-                    }
                 }
             }
         }

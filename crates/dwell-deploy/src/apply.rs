@@ -1,7 +1,7 @@
 //! Core deployment logic — render templates and write targets.
 
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use dwell_core::{ApplyAction, ApplyResult, Entry, EntryKind, Result, hash_content, source_to_target};
 use dwell_store::DeployState;
@@ -19,7 +19,7 @@ pub struct Deployer {
 }
 
 impl Deployer {
-    pub fn new(home: PathBuf, state_path: &PathBuf, dry_run: bool) -> Result<Self> {
+    pub fn new(home: PathBuf, state_path: &Path, dry_run: bool) -> Result<Self> {
         let state = DeployState::load(state_path).unwrap_or_else(|_| DeployState::new());
         Ok(Deployer {
             home,
@@ -40,7 +40,7 @@ impl Deployer {
     pub fn apply_entry(
         &mut self,
         entry: &Entry,
-        source_root: &PathBuf,
+        source_root: &Path,
         data: &serde_json::Value,
     ) -> Result<ApplyResult> {
         let target = source_to_target(&entry.source_path, &self.home);
@@ -146,7 +146,7 @@ impl Deployer {
     pub fn apply_all(
         &mut self,
         entries: &[Entry],
-        source_root: &PathBuf,
+        source_root: &Path,
         data: &serde_json::Value,
     ) -> Result<Vec<ApplyResult>> {
         let mut results = vec![];
@@ -168,7 +168,7 @@ impl Deployer {
     }
 
     /// Save deployment state to disk.
-    pub fn save_state(&self, path: &PathBuf) -> std::io::Result<()> {
+    pub fn save_state(&self, path: &Path) -> std::io::Result<()> {
         self.state.save(path)
     }
 

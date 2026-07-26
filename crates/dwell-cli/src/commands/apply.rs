@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::commands::{CliRef, resolve_source, resolve_home};
 use crate::output::Output;
@@ -20,7 +20,7 @@ pub fn run(cli: &CliRef, _cfg: &dwell_core::Config, source: Option<PathBuf>, for
         .unwrap_or_else(|| PathBuf::from("/tmp/dwell-state.json"));
 
     let data = load_template_data(&home);
-    let mut deployer = dwell_deploy::Deployer::new(home.clone(), &state_path, cli.dry_run)?
+    let mut deployer = dwell_deploy::Deployer::new(home.clone(), state_path.as_path(), cli.dry_run)?
         .with_force(force);
 
     let results = deployer.apply_all(&entries, &source_dir, &data)?;
@@ -37,7 +37,7 @@ pub fn run(cli: &CliRef, _cfg: &dwell_core::Config, source: Option<PathBuf>, for
     Ok(())
 }
 
-fn load_template_data(home: &PathBuf) -> serde_json::Value {
+fn load_template_data(home: &Path) -> serde_json::Value {
     let mut data = serde_json::Map::new();
     data.insert("home".into(), serde_json::Value::String(home.to_string_lossy().to_string()));
     data.insert("hostname".into(), serde_json::Value::String(

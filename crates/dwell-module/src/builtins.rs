@@ -187,7 +187,7 @@ fn get_str<'a>(obj: &'a serde_json::Map<String, serde_json::Value>, key: &str, d
         .map(|s| s.to_string())
         .unwrap_or_else(|| {
             // Try the short key (e.g. "name" instead of "user.name")
-            let short = key.split('.').last().unwrap_or(key);
+            let short = key.split('.').next_back().unwrap_or(key);
             obj.get(short)
                 .and_then(|v| v.as_str())
                 .map(|s| s.to_string())

@@ -54,9 +54,9 @@ impl PackageManager for CargoBackend {
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let mut packages = Vec::new();
-        let mut lines = stdout.lines();
+        let lines = stdout.lines();
 
-        while let Some(line) = lines.next() {
+        for line in lines {
             // Skip empty lines and indented sub-package lines (e.g. "    clippy-driver v0.1.57")
             if line.is_empty() || line.starts_with(' ') {
                 continue;
