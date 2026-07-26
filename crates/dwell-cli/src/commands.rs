@@ -5,8 +5,8 @@ mod apply;
 mod deploy;
 mod deps;
 mod diff;
-mod init;
 mod import_cmd;
+mod init;
 mod module_cmd;
 mod package;
 mod reset;
@@ -79,7 +79,9 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
             Ok(())
         }
         crate::Commands::Module { action } => module_cmd::run(&cli_ref, &cfg, action),
-        crate::Commands::Import { url, all, dry_run } => import_cmd::run(&cli_ref, &cfg, url, all, dry_run),
+        crate::Commands::Import { url, all, dry_run } => {
+            import_cmd::run(&cli_ref, &cfg, url, all, dry_run)
+        }
         crate::Commands::Plugin { .. } => {
             eprintln!("Plugin management — Phase 4 (coming soon)");
             Ok(())
