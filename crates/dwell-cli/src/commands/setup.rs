@@ -65,6 +65,7 @@ impl SetupManifest {
         self.sys_packages.values().map(|v| v.len()).sum()
     }
 
+    #[allow(dead_code)]
     fn all_packages(&self) -> Vec<String> {
         let mut pkgs: Vec<String> = self.sys_packages.values()
             .flat_map(|v| v.iter().cloned())
