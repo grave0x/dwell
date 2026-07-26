@@ -17,7 +17,7 @@ pub fn run(
 
 /// Install all declared system packages.
 fn cmd_install(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()> {
-    let out = Output::new(cli.json, cli.verbose, cli.quiet);
+    let out = Output::new(cli.json, cli.verbose, cli.quiet, cli.log_level.clone());
     let registry = dwell_package::PackageManagerRegistry::new();
 
     let backend = registry.detect().ok_or_else(|| {
@@ -65,7 +65,7 @@ fn cmd_install(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()>
 
 /// List all installed packages per backend, marking declared ones with `*`.
 fn cmd_list(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()> {
-    let out = Output::new(cli.json, cli.verbose, cli.quiet);
+    let out = Output::new(cli.json, cli.verbose, cli.quiet, cli.log_level.clone());
     let registry = dwell_package::PackageManagerRegistry::new();
     let declared: Vec<&str> = cfg.packages.system.iter().map(|s| s.as_str()).collect();
 
@@ -101,7 +101,7 @@ fn cmd_list(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()> {
 
 /// Remove all declared packages via the first available backend.
 fn cmd_remove(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()> {
-    let out = Output::new(cli.json, cli.verbose, cli.quiet);
+    let out = Output::new(cli.json, cli.verbose, cli.quiet, cli.log_level.clone());
     let registry = dwell_package::PackageManagerRegistry::new();
 
     let backend = registry.detect().ok_or_else(|| {
@@ -147,7 +147,7 @@ fn cmd_remove(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()> 
 
 /// Show package drift — declared vs installed.
 fn cmd_diff(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()> {
-    let out = Output::new(cli.json, cli.verbose, cli.quiet);
+    let out = Output::new(cli.json, cli.verbose, cli.quiet, cli.log_level.clone());
     let registry = dwell_package::PackageManagerRegistry::new();
 
     let backend = registry.detect().ok_or_else(|| {

@@ -21,6 +21,7 @@ pub struct CliRef {
     pub verbose: u8,
     pub quiet: bool,
     pub json: bool,
+    pub log_level: Option<String>,
 }
 
 pub fn run(cli: Cli) -> dwell_core::Result<()> {
@@ -30,6 +31,8 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
         verbose,
         quiet,
         json,
+        log_file: _,
+        log_level,
         command,
     } = cli;
     let cli_ref = CliRef {
@@ -37,6 +40,7 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
         verbose,
         quiet,
         json,
+        log_level,
     };
     let cfg = dwell_core::Config::load(&_config)?;
 
@@ -122,7 +126,7 @@ mod doctor {
     use crate::output::Output;
 
     pub fn run(_cli: &CliRef) {
-        let out = Output::new(_cli.json, _cli.verbose, _cli.quiet);
+        let out = Output::new(_cli.json, _cli.verbose, _cli.quiet, _cli.log_level.clone());
         out.title("dwell doctor — system health check");
 
         for (name, default) in &[

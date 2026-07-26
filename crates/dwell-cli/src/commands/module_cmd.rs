@@ -8,7 +8,7 @@ pub fn run(
     _cfg: &dwell_core::Config,
     action: crate::ModuleCommand,
 ) -> dwell_core::Result<()> {
-    let out = Output::new(cli.json, cli.verbose, cli.quiet);
+    let out = Output::new(cli.json, cli.verbose, cli.quiet, cli.log_level.clone());
     let reg = ModuleRegistry::new();
 
     match action {
