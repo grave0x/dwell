@@ -10,6 +10,8 @@ mod package;
 mod sync;
 mod deps;
 mod setup;
+mod deploy;
+mod reset;
 
 /// A cheap reference-like view of CLI options, avoiding partial moves.
 pub struct CliRef {
@@ -34,6 +36,8 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
         crate::Commands::Package { action } => package::run(&cli_ref, &cfg, action),
         crate::Commands::Deps { action } => deps::run(&cli_ref, &cfg, action),
         crate::Commands::Setup { action } => setup::run(&cli_ref, &cfg, action),
+        crate::Commands::Deploy { source, no_deps, no_packages, dry_run } => deploy::run(&cli_ref, &cfg, source, no_deps, no_packages, dry_run),
+        crate::Commands::Reset { path, all, stray, source, dry_run } => reset::run(&cli_ref, &cfg, path, all, stray, source, dry_run),
         crate::Commands::Module { .. } => {
             eprintln!("Module management — Phase 2 (coming soon)");
             Ok(())
