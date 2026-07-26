@@ -78,12 +78,12 @@ impl Config {
 
 fn expand_tilde(path: &Path) -> std::path::PathBuf {
     let s = path.to_string_lossy();
-    if s.starts_with('~') {
+    if let Some(stripped) = s.strip_prefix('~') {
         if let Some(home) = dirs::home_dir() {
-            if s == "~" {
+            if stripped.is_empty() {
                 return home;
             }
-            let rest = s.strip_prefix("~/").unwrap_or(&s[1..]);
+            let rest = stripped.strip_prefix('/').unwrap_or(stripped);
             return home.join(rest);
         }
     }
@@ -138,68 +138,35 @@ impl Default for DataConfig {
 }
 
 /// Module configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct ModuleConfig {
     /// Enabled modules with their options.
     pub enabled: HashMap<String, toml::Value>,
 }
 
-impl Default for ModuleConfig {
-    fn default() -> Self {
-        ModuleConfig {
-            enabled: HashMap::new(),
-        }
-    }
-}
-
 /// Package configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct PackageConfig {
     /// System packages to install.
     pub system: Vec<String>,
 }
 
-impl Default for PackageConfig {
-    fn default() -> Self {
-        PackageConfig {
-            system: Vec::new(),
-        }
-    }
-}
-
 /// Secret configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct SecretConfig {
     /// Encrypted files to decrypt.
     pub files: Vec<String>,
 }
 
-impl Default for SecretConfig {
-    fn default() -> Self {
-        SecretConfig {
-            files: Vec::new(),
-        }
-    }
-}
-
 /// Plugin configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct PluginConfig {
     pub wasm: Vec<String>,
     pub lua: Vec<String>,
-}
-
-impl Default for PluginConfig {
-    fn default() -> Self {
-        PluginConfig {
-            wasm: Vec::new(),
-            lua: Vec::new(),
-        }
-    }
 }
 
 /// Generation (snapshot) configuration.
