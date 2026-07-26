@@ -50,13 +50,18 @@ impl PackageManager for CargoBackend {
         let output = Command::new("cargo")
             .args(["install", "--list"])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("cargo install --list failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!(
+                    "cargo install --list failed: {}",
+                    e
+                ))
+            })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let mut packages = Vec::new();
-        let mut lines = stdout.lines();
+        let lines = stdout.lines();
 
-        while let Some(line) = lines.next() {
+        for line in lines {
             // Skip empty lines and indented sub-package lines (e.g. "    clippy-driver v0.1.57")
             if line.is_empty() || line.starts_with(' ') {
                 continue;
@@ -64,7 +69,10 @@ impl PackageManager for CargoBackend {
             let line = line.trim();
             // Format: "pkg-name v0.1.0:"
             let name = line.split(' ').next().unwrap_or(line).to_string();
-            let version = line.split(' ').nth(1).map(|s| s.trim_end_matches(':').to_string());
+            let version = line
+                .split(' ')
+                .nth(1)
+                .map(|s| s.trim_end_matches(':').to_string());
             packages.push(PackageInfo {
                 name,
                 version,
@@ -81,7 +89,9 @@ impl PackageManager for CargoBackend {
         let output = Command::new("cargo")
             .args(["install", package])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("cargo install failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("cargo install failed: {}", e))
+            })?;
 
         Ok(output.status.success())
     }
@@ -90,7 +100,9 @@ impl PackageManager for CargoBackend {
         let output = Command::new("cargo")
             .args(["uninstall", package])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("cargo uninstall failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("cargo uninstall failed: {}", e))
+            })?;
 
         Ok(output.status.success())
     }
@@ -108,7 +120,9 @@ impl PackageManager for CargoBackend {
         let output = Command::new("cargo")
             .args(["search", query])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("cargo search failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("cargo search failed: {}", e))
+            })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let packages = stdout

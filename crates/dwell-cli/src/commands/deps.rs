@@ -21,16 +21,21 @@ pub fn run(
 }
 
 fn resolve_source(source: Option<PathBuf>) -> dwell_core::Result<PathBuf> {
-    source.or_else(|| {
-        dirs::data_dir().map(|d| d.join("dwell"))
-    }).ok_or_else(|| dwell_core::DwellError::InvalidConfig(
-        "Could not determine source directory. Use --source to specify.".into()
-    ))
+    source
+        .or_else(|| dirs::data_dir().map(|d| d.join("dwell")))
+        .ok_or_else(|| {
+            dwell_core::DwellError::InvalidConfig(
+                "Could not determine source directory. Use --source to specify.".into(),
+            )
+        })
 }
 
 fn cmd_scan(out: &Output, source: Option<PathBuf>) -> dwell_core::Result<()> {
     let source_dir = resolve_source(source)?;
-    out.info(&format!("Scanning {} for dependencies...", source_dir.display()));
+    out.info(&format!(
+        "Scanning {} for dependencies...",
+        source_dir.display()
+    ));
 
     let deps = scanner::scan_source(&source_dir)?;
     let count = deps.deps.len();
@@ -42,7 +47,10 @@ fn cmd_scan(out: &Output, source: Option<PathBuf>) -> dwell_core::Result<()> {
 
     // Save
     deps.save(&source_dir)?;
-    out.success(&format!("Scanned {} entries, generated .dwell/deps.toml", count));
+    out.success(&format!(
+        "Scanned {} entries, generated .dwell/deps.toml",
+        count
+    ));
 
     // Summary
     for (entry, dep) in &deps.deps {
@@ -80,10 +88,9 @@ fn cmd_install(
     include_tools: bool,
 ) -> dwell_core::Result<()> {
     let source_dir = resolve_source(source)?;
-    let deps = DepsConfig::load(&source_dir)
-        .map_err(|e| dwell_core::DwellError::InvalidConfig(
-            format!("Failed to load .dwell/deps.toml: {}", e)
-        ))?;
+    let deps = DepsConfig::load(&source_dir).map_err(|e| {
+        dwell_core::DwellError::InvalidConfig(format!("Failed to load .dwell/deps.toml: {}", e))
+    })?;
 
     let requires = deps.all_requires();
     let mut targets = requires.clone();
@@ -103,11 +110,14 @@ fn cmd_install(
 
     match backend {
         Some(backend) => {
-            out.info(&format!("Using package manager: {}", backend.display_name()));
+            out.info(&format!(
+                "Using package manager: {}",
+                backend.display_name()
+            ));
 
             let installed = backend.list_installed()?;
-            let installed_names: std::collections::HashSet<String> = installed
-                .iter().map(|p| p.name.clone()).collect();
+            let installed_names: std::collections::HashSet<String> =
+                installed.iter().map(|p| p.name.clone()).collect();
 
             let mut count = 0;
             for pkg in &targets {
@@ -133,8 +143,7 @@ fn cmd_install(
 
 fn cmd_audit(out: &Output, source: Option<PathBuf>) -> dwell_core::Result<()> {
     let source_dir = resolve_source(source)?;
-    let deps = DepsConfig::load(&source_dir)
-        .unwrap_or_default();
+    let deps = DepsConfig::load(&source_dir).unwrap_or_default();
 
     let requires = deps.all_requires();
     let tools = deps.all_tools();

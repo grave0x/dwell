@@ -1,7 +1,7 @@
 //! Deployment state tracking — what has been deployed and where.
 
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
@@ -28,9 +28,15 @@ pub struct DeployEntry {
     pub action: String,
 }
 
+impl Default for DeployState {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DeployState {
     /// Load deployment state from disk.
-    pub fn load(path: &PathBuf) -> std::io::Result<Self> {
+    pub fn load(path: &Path) -> std::io::Result<Self> {
         match std::fs::read_to_string(path) {
             Ok(content) => {
                 let state: DeployState = serde_json::from_str(&content)
@@ -52,16 +58,16 @@ impl DeployState {
     }
 
     /// Save deployment state to disk.
-    pub fn save(&self, path: &PathBuf) -> std::io::Result<()> {
+    pub fn save(&self, path: &Path) -> std::io::Result<()> {
         let content = serde_json::to_string_pretty(self)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
         std::fs::write(path, content)
     }
 
     /// Record a successful deployment.
-    pub fn record(&mut self, target: &PathBuf, source: &str, hash: &str, action: &str) {
+    pub fn record(&mut self, target: &Path, source: &str, hash: &str, action: &str) {
         self.entries.insert(
-            target.clone(),
+            target.to_path_buf(),
             DeployEntry {
                 hash: hash.to_string(),
                 source: source.to_string(),

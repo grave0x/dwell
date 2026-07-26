@@ -42,19 +42,13 @@ impl Default for Config {
             modules: ModuleConfig {
                 enabled: HashMap::new(),
             },
-            packages: PackageConfig {
-                system: Vec::new(),
-            },
-            secrets: SecretConfig {
-                files: Vec::new(),
-            },
+            packages: PackageConfig { system: Vec::new() },
+            secrets: SecretConfig { files: Vec::new() },
             plugins: PluginConfig {
                 wasm: Vec::new(),
                 lua: Vec::new(),
             },
-            generations: GenerationConfig {
-                keep: 10,
-            },
+            generations: GenerationConfig { keep: 10 },
         }
     }
 }
@@ -64,26 +58,27 @@ impl Config {
     /// Supports `~` expansion for the home directory.
     pub fn load(path: &Path) -> crate::Result<Self> {
         let expanded = expand_tilde(path);
-        let content = fs::read_to_string(&expanded)
-            .map_err(|e| DwellError::InvalidConfig(format!(
-                "Failed to read config at {}: {}", expanded.display(), e
-            )))?;
+        let content = fs::read_to_string(&expanded).map_err(|e| {
+            DwellError::InvalidConfig(format!(
+                "Failed to read config at {}: {}",
+                expanded.display(),
+                e
+            ))
+        })?;
         let cfg: Config = toml::from_str(&content)
-            .map_err(|e| DwellError::InvalidConfig(format!(
-                "Failed to parse config: {}", e
-            )))?;
+            .map_err(|e| DwellError::InvalidConfig(format!("Failed to parse config: {}", e)))?;
         Ok(cfg)
     }
 }
 
 fn expand_tilde(path: &Path) -> std::path::PathBuf {
     let s = path.to_string_lossy();
-    if s.starts_with('~') {
+    if let Some(stripped) = s.strip_prefix('~') {
         if let Some(home) = dirs::home_dir() {
-            if s == "~" {
+            if stripped.is_empty() {
                 return home;
             }
-            let rest = s.strip_prefix("~/").unwrap_or(&s[1..]);
+            let rest = stripped.strip_prefix('/').unwrap_or(stripped);
             return home.join(rest);
         }
     }
@@ -138,68 +133,35 @@ impl Default for DataConfig {
 }
 
 /// Module configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct ModuleConfig {
     /// Enabled modules with their options.
     pub enabled: HashMap<String, toml::Value>,
 }
 
-impl Default for ModuleConfig {
-    fn default() -> Self {
-        ModuleConfig {
-            enabled: HashMap::new(),
-        }
-    }
-}
-
 /// Package configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct PackageConfig {
     /// System packages to install.
     pub system: Vec<String>,
 }
 
-impl Default for PackageConfig {
-    fn default() -> Self {
-        PackageConfig {
-            system: Vec::new(),
-        }
-    }
-}
-
 /// Secret configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct SecretConfig {
     /// Encrypted files to decrypt.
     pub files: Vec<String>,
 }
 
-impl Default for SecretConfig {
-    fn default() -> Self {
-        SecretConfig {
-            files: Vec::new(),
-        }
-    }
-}
-
 /// Plugin configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct PluginConfig {
     pub wasm: Vec<String>,
     pub lua: Vec<String>,
-}
-
-impl Default for PluginConfig {
-    fn default() -> Self {
-        PluginConfig {
-            wasm: Vec::new(),
-            lua: Vec::new(),
-        }
-    }
 }
 
 /// Generation (snapshot) configuration.

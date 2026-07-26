@@ -49,4 +49,24 @@ curl -fsSL "$URL" -o "$DEST/dwell"
 chmod +x "$DEST/dwell"
 
 echo "✓ dwell installed to $DEST/dwell"
+
+# Install shell completions
+SHELL_NAME="$(basename "$SHELL" 2>/dev/null || true)"
+case "$SHELL_NAME" in
+  bash)
+    "$DEST/dwell" completion bash | sudo tee /usr/share/bash-completion/completions/dwell >/dev/null 2>&1 && \
+      echo "✓ bash completions installed" || echo "  (run 'dwell completion bash' to install manually)"
+    ;;
+  zsh)
+    mkdir -p "$HOME/.zfunc"
+    "$DEST/dwell" completion zsh > "$HOME/.zfunc/_dwell" 2>/dev/null && \
+      echo "✓ zsh completions installed to ~/.zfunc/_dwell" || true
+    ;;
+  fish)
+    mkdir -p "$HOME/.config/fish/completions"
+    "$DEST/dwell" completion fish > "$HOME/.config/fish/completions/dwell.fish" 2>/dev/null && \
+      echo "✓ fish completions installed" || true
+    ;;
+esac
+
 echo "  Run 'dwell init' to get started."

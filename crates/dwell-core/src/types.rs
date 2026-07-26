@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// A source entry — a tracked item in the dotfile repository.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,15 +48,16 @@ impl EntryKind {
             EntryKind::Remove
         } else if name.starts_with("symlink_") {
             EntryKind::Symlink
-        } else if name.ends_with(".tmpl") {
-            EntryKind::File
         } else {
             EntryKind::File
         }
     }
 
     pub fn is_script(&self) -> bool {
-        matches!(self, EntryKind::RunOnce | EntryKind::RunBefore | EntryKind::RunAfter)
+        matches!(
+            self,
+            EntryKind::RunOnce | EntryKind::RunBefore | EntryKind::RunAfter
+        )
     }
 }
 
@@ -127,7 +128,7 @@ pub fn hash_content(content: &[u8]) -> String {
 ///
 /// `dot_config/hypr/hyprland.conf` → `/home/user/.config/hypr/hyprland.conf`
 /// `dot_bashrc` → `/home/user/.bashrc`
-pub fn source_to_target(source_path: &str, home: &PathBuf) -> PathBuf {
+pub fn source_to_target(source_path: &str, home: &Path) -> PathBuf {
     // Determine if this is a dotfile (starts with `dot_` or `private_dot_`)
     let is_dotfile = source_path.starts_with("dot_") || source_path.starts_with("private_dot_");
 
@@ -138,9 +139,7 @@ pub fn source_to_target(source_path: &str, home: &PathBuf) -> PathBuf {
         .unwrap_or(source_path);
 
     // Strip suffixes
-    let relative = relative
-        .strip_suffix(".tmpl")
-        .unwrap_or(relative);
+    let relative = relative.strip_suffix(".tmpl").unwrap_or(relative);
 
     // Strip script prefixes
     let relative = relative
@@ -178,11 +177,26 @@ mod tests {
 
     #[test]
     fn test_entry_kind_detection() {
-        assert_eq!(EntryKind::from_filename("run_once_install.sh"), EntryKind::RunOnce);
-        assert_eq!(EntryKind::from_filename("run_before_check.sh"), EntryKind::RunBefore);
-        assert_eq!(EntryKind::from_filename("run_after_reload.sh"), EntryKind::RunAfter);
-        assert_eq!(EntryKind::from_filename("dwell_remove_stale"), EntryKind::Remove);
-        assert_eq!(EntryKind::from_filename("symlink_config"), EntryKind::Symlink);
+        assert_eq!(
+            EntryKind::from_filename("run_once_install.sh"),
+            EntryKind::RunOnce
+        );
+        assert_eq!(
+            EntryKind::from_filename("run_before_check.sh"),
+            EntryKind::RunBefore
+        );
+        assert_eq!(
+            EntryKind::from_filename("run_after_reload.sh"),
+            EntryKind::RunAfter
+        );
+        assert_eq!(
+            EntryKind::from_filename("dwell_remove_stale"),
+            EntryKind::Remove
+        );
+        assert_eq!(
+            EntryKind::from_filename("symlink_config"),
+            EntryKind::Symlink
+        );
         assert_eq!(EntryKind::from_filename("bashrc"), EntryKind::File);
     }
 

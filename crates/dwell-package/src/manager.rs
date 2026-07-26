@@ -1,7 +1,7 @@
 //! Package manager registry — discovers available backends.
 
-use std::collections::HashMap;
 use dwell_core::traits::PackageManager;
+use std::collections::HashMap;
 
 pub struct PackageManagerRegistry {
     managers: HashMap<String, Box<dyn PackageManager>>,

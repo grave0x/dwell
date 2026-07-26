@@ -35,10 +35,9 @@ impl PackageManager for PacmanBackend {
     }
 
     fn list_installed(&self) -> Result<Vec<PackageInfo>> {
-        let output = Command::new("pacman")
-            .args(["-Q"])
-            .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("pacman -Q failed: {}", e)))?;
+        let output = Command::new("pacman").args(["-Q"]).output().map_err(|e| {
+            dwell_core::DwellError::PackageManager(format!("pacman -Q failed: {}", e))
+        })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let packages = stdout
@@ -65,7 +64,9 @@ impl PackageManager for PacmanBackend {
         let output = Command::new("pacman")
             .args(["-S", "--noconfirm", package])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("pacman install failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("pacman install failed: {}", e))
+            })?;
 
         Ok(output.status.success())
     }
@@ -74,7 +75,9 @@ impl PackageManager for PacmanBackend {
         let output = Command::new("pacman")
             .args(["-R", "--noconfirm", package])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("pacman remove failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("pacman remove failed: {}", e))
+            })?;
 
         Ok(output.status.success())
     }
@@ -83,7 +86,9 @@ impl PackageManager for PacmanBackend {
         let output = Command::new("pacman")
             .args(["-Ss", query])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("pacman -Ss failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("pacman -Ss failed: {}", e))
+            })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let mut packages = Vec::new();

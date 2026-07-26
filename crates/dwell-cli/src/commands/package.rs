@@ -2,7 +2,11 @@ use crate::commands::CliRef;
 use crate::output::Output;
 
 /// Run package commands — dispatches to the appropriate sub-command.
-pub fn run(cli: &CliRef, cfg: &dwell_core::Config, action: crate::PackageCommand) -> dwell_core::Result<()> {
+pub fn run(
+    cli: &CliRef,
+    cfg: &dwell_core::Config,
+    action: crate::PackageCommand,
+) -> dwell_core::Result<()> {
     match action {
         crate::PackageCommand::Install => cmd_install(cli, cfg),
         crate::PackageCommand::List => cmd_list(cli, cfg),
@@ -16,10 +20,11 @@ fn cmd_install(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()>
     let out = Output::new(cli.json, cli.verbose, cli.quiet);
     let registry = dwell_package::PackageManagerRegistry::new();
 
-    let backend = registry.detect()
-        .ok_or_else(|| dwell_core::DwellError::PackageManager(
-            "No package manager detected (tried apt, pacman, brew, nix, cargo)".into()
-        ))?;
+    let backend = registry.detect().ok_or_else(|| {
+        dwell_core::DwellError::PackageManager(
+            "No package manager detected (tried apt, pacman, brew, nix, cargo)".into(),
+        )
+    })?;
 
     out.info(&format!("Using backend: {}", backend.display_name()));
 
@@ -50,7 +55,9 @@ fn cmd_install(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()>
 
     out.success(&format!(
         "{} installed, {} skipped, {} total",
-        installed_count, skipped_count, packages.len()
+        installed_count,
+        skipped_count,
+        packages.len()
     ));
 
     Ok(())
@@ -70,7 +77,11 @@ fn cmd_list(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()> {
         match backend.list_installed() {
             Ok(packages) => {
                 for pkg in &packages {
-                    let marker = if declared.contains(&pkg.name.as_str()) { " *" } else { "  " };
+                    let marker = if declared.contains(&pkg.name.as_str()) {
+                        " *"
+                    } else {
+                        "  "
+                    };
                     if cli.json {
                         // JSON output uses the Output helper
                         let _ = marker;
@@ -93,10 +104,9 @@ fn cmd_remove(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()> 
     let out = Output::new(cli.json, cli.verbose, cli.quiet);
     let registry = dwell_package::PackageManagerRegistry::new();
 
-    let backend = registry.detect()
-        .ok_or_else(|| dwell_core::DwellError::PackageManager(
-            "No package manager detected".into()
-        ))?;
+    let backend = registry.detect().ok_or_else(|| {
+        dwell_core::DwellError::PackageManager("No package manager detected".into())
+    })?;
 
     out.info(&format!("Using backend: {}", backend.display_name()));
 
@@ -127,7 +137,9 @@ fn cmd_remove(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()> 
 
     out.success(&format!(
         "{} removed, {} skipped, {} total",
-        removed_count, skipped_count, packages.len()
+        removed_count,
+        skipped_count,
+        packages.len()
     ));
 
     Ok(())
@@ -138,10 +150,9 @@ fn cmd_diff(cli: &CliRef, cfg: &dwell_core::Config) -> dwell_core::Result<()> {
     let out = Output::new(cli.json, cli.verbose, cli.quiet);
     let registry = dwell_package::PackageManagerRegistry::new();
 
-    let backend = registry.detect()
-        .ok_or_else(|| dwell_core::DwellError::PackageManager(
-            "No package manager detected".into()
-        ))?;
+    let backend = registry.detect().ok_or_else(|| {
+        dwell_core::DwellError::PackageManager("No package manager detected".into())
+    })?;
 
     out.info(&format!("Using backend: {}", backend.display_name()));
 
