@@ -37,7 +37,7 @@ jobs:
           CARGO_TARGET_DIR: target-cross
 
       - name: Upload binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dwell-cli-${{ matrix.target }}
           path: target-cross/${{ matrix.target }}/release/dwell-cli
@@ -61,7 +61,7 @@ jobs:
         run: cargo deb --output dwell-amd64.deb
 
       - name: Upload .deb
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dwell-amd64.deb
           path: dwell-amd64.deb
@@ -81,7 +81,7 @@ jobs:
           echo "PKGBUILD generated for v$VERSION"
 
       - name: Upload PKGBUILD
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: PKGBUILD
           path: PKGBUILD
@@ -115,7 +115,7 @@ jobs:
           echo "Formula generated"
 
       - name: Upload formula
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dwell.rb
           path: dwell.rb

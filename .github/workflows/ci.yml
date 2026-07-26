@@ -91,7 +91,7 @@ jobs:
         run: cargo build --release --workspace
 
       - name: Upload binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dwell-linux-x86_64
           path: target/release/dwell-cli
