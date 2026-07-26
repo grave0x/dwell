@@ -42,6 +42,13 @@ pub fn run(cli: &CliRef, _cfg: &dwell_core::Config, source: Option<PathBuf>, clo
         out.success("Initialized git repository");
     }
 
+    // Set remote if provided
+    if let Some(url) = _remote_url {
+        let git_repo = dwell_store::GitRepo::open(&git_dir)?;
+        git_repo.set_remote(&url)?;
+        out.info(&format!("Set remote origin: {}", url));
+    }
+
     // Create dwell.toml
     let config_dir = dirs::config_dir()
         .map(|d| d.join("dwell"))

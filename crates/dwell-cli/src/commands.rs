@@ -7,6 +7,7 @@ mod add;
 mod status;
 mod watch;
 mod package;
+mod sync;
 mod deps;
 
 /// A cheap reference-like view of CLI options, avoiding partial moves.
@@ -51,13 +52,7 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
             doctor::run(&cli_ref);
             Ok(())
         }
-        crate::Commands::Sync { message, source, dry_run } => {
-            // Sync not implemented on this branch yet
-            let _ = (message, source, dry_run);
-            eprintln!("Sync command — coming soon");
-            Ok(())
-        }
-        crate::Commands::Deps { action } => deps::run(&cli_ref, &cfg, action),
+        crate::Commands::Sync { message, source, dry_run } => sync::run(&cli_ref, &cfg, message, source, dry_run),
     }
 }
 

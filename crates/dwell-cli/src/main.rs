@@ -135,7 +135,6 @@ pub enum Commands {
         #[arg(long)]
         dry_run: bool,
     },
-
     /// Manage dotfile dependencies (scan, install, audit, bundle)
     Deps {
         #[command(subcommand)]

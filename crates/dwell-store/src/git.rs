@@ -95,6 +95,62 @@ impl GitRepo {
         }
         Ok(summary.trim().to_string())
     }
+
+    /// Stage all changes (git add -A).
+    pub fn add_all(&self) -> Result<()> {
+        let repo = git2::Repository::open(&self.path).map_err(git_err)?;
+        let mut index = repo.index().map_err(git_err)?;
+        index.add_all(["*"].iter(), git2::IndexAddOption::DEFAULT, None)
+            .map_err(git_err)?;
+        index.write().map_err(git_err)?;
+        Ok(())
+    }
+
+    /// Get the URL of the origin remote, if configured.
+    pub fn remote_url(&self) -> Result<Option<String>> {
+        let repo = git2::Repository::open(&self.path).map_err(git_err)?;
+        let result = match repo.find_remote("origin") {
+            Ok(remote) => remote.url().map(|s| s.to_string()),
+            Err(_) => None,
+        };
+        Ok(result)
+    }
+
+    /// Check if a remote (origin) is configured.
+    pub fn has_remote(&self) -> Result<bool> {
+        self.remote_url().map(|r| r.is_some())
+    }
+
+    /// Push the current branch to origin.
+    pub fn push(&self) -> Result<()> {
+        let repo = git2::Repository::open(&self.path).map_err(git_err)?;
+
+        // Determine current branch name
+        let head = repo.head().map_err(git_err)?;
+        let branch = head.shorthand().unwrap_or("main").to_string();
+
+        let mut remote = repo.find_remote("origin").map_err(|_| {
+            DwellError::Git("No remote 'origin' configured".into())
+        })?;
+
+        // Push the current branch
+        let refspec = format!("refs/heads/{}:refs/heads/{}", branch, branch);
+        let mut push_opts = git2::PushOptions::new();
+        remote.push(&[&refspec], Some(&mut push_opts)).map_err(git_err)?;
+
+        Ok(())
+    }
+
+    /// Set the origin remote URL.
+    pub fn set_remote(&self, url: &str) -> Result<()> {
+        let repo = git2::Repository::open(&self.path).map_err(git_err)?;
+        // Remove existing origin if present
+        if repo.find_remote("origin").is_ok() {
+            repo.remote_delete("origin").map_err(git_err)?;
+        }
+        repo.remote("origin", url).map_err(git_err)?;
+        Ok(())
+    }
 }
 
 fn status_to_str(status: git2::Status) -> &'static str {
