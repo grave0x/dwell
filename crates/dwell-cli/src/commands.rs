@@ -12,6 +12,7 @@ mod deps;
 mod setup;
 mod deploy;
 mod reset;
+mod module_cmd;
 
 /// A cheap reference-like view of CLI options, avoiding partial moves.
 pub struct CliRef {
@@ -45,10 +46,7 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
             clap_complete::generate(shell, &mut cmd, name, &mut std::io::stdout());
             Ok(())
         }
-        crate::Commands::Module { .. } => {
-            eprintln!("Module management — Phase 2 (coming soon)");
-            Ok(())
-        }
+        crate::Commands::Module { action } => module_cmd::run(&cli_ref, &cfg, action),
         crate::Commands::Plugin { .. } => {
             eprintln!("Plugin management — Phase 4 (coming soon)");
             Ok(())
