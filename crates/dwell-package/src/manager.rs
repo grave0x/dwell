@@ -24,6 +24,7 @@ impl PackageManagerRegistry {
         registry.register(Box::new(crate::backends::brew::BrewBackend::new()));
         registry.register(Box::new(crate::backends::nix::NixBackend::new()));
         registry.register(Box::new(crate::backends::cargo::CargoBackend::new()));
+        registry.register(Box::new(crate::backends::apk::ApkBackend::new()));
 
         registry
     }
