@@ -76,15 +76,14 @@ impl Config {
     }
 }
 
-#[allow(clippy::manual_strip)]
 fn expand_tilde(path: &Path) -> std::path::PathBuf {
     let s = path.to_string_lossy();
-    if s.starts_with('~') {
+    if let Some(stripped) = s.strip_prefix('~') {
         if let Some(home) = dirs::home_dir() {
-            if s == "~" {
+            if stripped.is_empty() {
                 return home;
             }
-            let rest = s.strip_prefix("~/").unwrap_or(&s[1..]);
+            let rest = stripped.strip_prefix('/').unwrap_or(stripped);
             return home.join(rest);
         }
     }
@@ -139,44 +138,36 @@ impl Default for DataConfig {
 }
 
 /// Module configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
-#[derive(Default)]
 pub struct ModuleConfig {
     /// Enabled modules with their options.
     pub enabled: HashMap<String, toml::Value>,
 }
 
-
 /// Package configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
-#[derive(Default)]
 pub struct PackageConfig {
     /// System packages to install.
     pub system: Vec<String>,
 }
 
-
 /// Secret configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
-#[derive(Default)]
 pub struct SecretConfig {
     /// Encrypted files to decrypt.
     pub files: Vec<String>,
 }
 
-
 /// Plugin configuration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
-#[derive(Default)]
 pub struct PluginConfig {
     pub wasm: Vec<String>,
     pub lua: Vec<String>,
 }
-
 
 /// Generation (snapshot) configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]
