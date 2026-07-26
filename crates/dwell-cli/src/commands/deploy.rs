@@ -15,11 +15,11 @@ pub fn run(
     let source_dir = crate::commands::resolve_source(cli, source)?;
     let home = crate::commands::resolve_home();
 
-    out.info("=== dwell deploy — full system setup ===");
+    out.title("dwell deploy — full system setup");
 
     // Phase 1: Scan dependencies
     if !no_deps {
-        out.info("Phase 1/4: Scanning dependencies...");
+        out.step("Phase 1/4", "Scanning dependencies...");
         let deps = dwell_core::scanner::scan_source(&source_dir)?;
         if deps.deps.is_empty() {
             out.info("  No dependencies found.");
@@ -52,12 +52,12 @@ pub fn run(
             }
         }
     } else {
-        out.info("Phase 1/4: Skipping dependency scan (--no-deps)");
+        out.step("Phase 1/4", "Skipping dependency scan (--no-deps)");
     }
 
     // Phase 2: Restore packages from setup capture
     if !no_packages {
-        out.info("Phase 2/4: Restoring captured packages...");
+        out.step("Phase 2/4", "Restoring captured packages...");
         let manifest_path = source_dir.join(".dwell/setup/manifest.json");
         if manifest_path.exists() {
             let reg = dwell_package::PackageManagerRegistry::new();
@@ -95,11 +95,11 @@ pub fn run(
             out.info("  No captured state found. Run 'dwell setup capture' first.");
         }
     } else {
-        out.info("Phase 2/4: Skipping package restore (--no-packages)");
+        out.step("Phase 2/4", "Skipping package restore (--no-packages)");
     }
 
     // Phase 3: Apply dotfiles
-    out.info("Phase 3/4: Applying dotfiles...");
+    out.step("Phase 3/4", "Applying dotfiles...");
     if !dry_run {
         let sd = dwell_store::SourceDir::open(&source_dir)?;
         let entries = sd.entries()?;
@@ -144,7 +144,7 @@ pub fn run(
     }
 
     // Phase 4: Sync to remote
-    out.info("Phase 4/4: Syncing to remote...");
+    out.step("Phase 4/4", "Syncing to remote...");
     if !dry_run {
         let git_dir = source_dir.join(".git");
         if git_dir.exists() {
@@ -172,6 +172,6 @@ pub fn run(
         out.info("  (dry-run — would commit and push)");
     }
 
-    out.success("=== deploy complete ===");
+    out.title("deploy complete");
     Ok(())
 }

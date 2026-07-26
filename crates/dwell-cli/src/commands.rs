@@ -117,54 +117,50 @@ fn resolve_home() -> std::path::PathBuf {
 
 mod doctor {
     use crate::commands::CliRef;
+    use crate::output::Output;
 
     pub fn run(_cli: &CliRef) {
-        println!("dwell doctor — system health check");
-        println!("================================");
+        let out = Output::new(_cli.json, _cli.verbose, _cli.quiet);
+        out.title("dwell doctor — system health check");
 
-        // Check XDG directories
         for (name, default) in &[
             ("XDG_CONFIG_HOME", dirs::config_dir()),
             ("XDG_CACHE_HOME", dirs::cache_dir()),
             ("XDG_DATA_HOME", dirs::data_dir()),
         ] {
             match default {
-                Some(path) => println!("  ✓ {} = {}", name, path.display()),
-                None => println!("  ✗ {} not set", name),
+                Some(path) => out.success(&format!("{} = {}", name, path.display())),
+                None => out.error(&format!("{} not set", name)),
             }
         }
 
-        // Check home
         match dirs::home_dir() {
-            Some(home) => println!("  ✓ HOME = {}", home.display()),
-            None => println!("  ✗ HOME not set"),
+            Some(home) => out.success(&format!("HOME = {}", home.display())),
+            None => out.error("HOME not set"),
         }
 
-        // Check git availability
         match std::process::Command::new("git").arg("--version").output() {
             Ok(o) if o.status.success() => {
                 let ver = String::from_utf8_lossy(&o.stdout).trim().to_string();
-                println!("  ✓ git available: {}", ver);
+                out.success(&format!("git available: {}", ver));
             }
-            _ => println!("  ✗ git not found"),
+            _ => out.error("git not found"),
         }
 
-        // Check existing dwell config
         let config_path = dirs::config_dir().map(|d| d.join("dwell").join("dwell.toml"));
         match &config_path {
-            Some(p) if p.exists() => println!("  ✓ dwell.toml found at {}", p.display()),
-            Some(p) => println!("  - dwell.toml not yet created at {}", p.display()),
-            None => println!("  ✗ Cannot determine config directory"),
+            Some(p) if p.exists() => out.success(&format!("dwell.toml found at {}", p.display())),
+            Some(p) => out.info(&format!("dwell.toml not yet created at {}", p.display())),
+            None => out.error("Cannot determine config directory"),
         }
 
-        // Check source directory
         let source_path = dirs::data_dir().map(|d| d.join("dwell"));
         match &source_path {
-            Some(p) if p.exists() => println!("  ✓ Source directory exists at {}", p.display()),
-            Some(p) => println!("  - Source directory not yet created at {}", p.display()),
-            None => println!("  ✗ Cannot determine data directory"),
+            Some(p) if p.exists() => out.success(&format!("Source directory exists at {}", p.display())),
+            Some(p) => out.info(&format!("Source directory not yet created at {}", p.display())),
+            None => out.error("Cannot determine data directory"),
         }
 
-        println!("\nRun `dwell init` to set up your dotfile repository.");
+        out.info("Run `dwell init` to set up your dotfile repository.");
     }
 }
