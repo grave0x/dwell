@@ -34,7 +34,7 @@ pub fn run(
     all: bool,
     dry_run: bool,
 ) -> dwell_core::Result<()> {
-    let out = Output::new(cli.json, cli.verbose, cli.quiet);
+    let out = Output::new(cli.json, cli.verbose, cli.quiet, None);
     let source_dir = crate::commands::resolve_source(cli, None)?;
 
     out.title(&format!("Importing: {}", url));
@@ -330,3 +330,4 @@ fn collect_dir(src_dir: &Path, prefix: &str, candidates: &mut Vec<ImportCandidat
         }
     }
 }
+
