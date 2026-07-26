@@ -5,7 +5,7 @@ use dwell_core::DwellError;
 use crate::commands::{CliRef, resolve_home};
 use crate::output::Output;
 
-pub fn run(cli: &CliRef, _cfg: &dwell_core::Config, source: Option<PathBuf>, clone_url: Option<String>) -> dwell_core::Result<()> {
+pub fn run(cli: &CliRef, _cfg: &dwell_core::Config, source: Option<PathBuf>, clone_url: Option<String>, remote_url: Option<String>) -> dwell_core::Result<()> {
     let _ = _cfg;
     let out = Output::new(cli.json, cli.verbose, cli.quiet);
 
@@ -39,6 +39,13 @@ pub fn run(cli: &CliRef, _cfg: &dwell_core::Config, source: Option<PathBuf>, clo
         config.set_str("status.showUntrackedFiles", "no").ok();
         drop(config);
         out.success("Initialized git repository");
+    }
+
+    // Set remote if provided
+    if let Some(url) = remote_url {
+        let git_repo = dwell_store::GitRepo::open(&git_dir)?;
+        git_repo.set_remote(&url)?;
+        out.info(&format!("Set remote origin: {}", url));
     }
 
     // Create dwell.toml

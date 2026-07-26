@@ -7,6 +7,7 @@ mod add;
 mod status;
 mod watch;
 mod package;
+mod sync;
 
 /// A cheap reference-like view of CLI options, avoiding partial moves.
 pub struct CliRef {
@@ -24,7 +25,7 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
     match command {
         crate::Commands::Apply { source, force } => apply::run(&cli_ref, &cfg, source, force),
         crate::Commands::Diff { source } => diff::run(&cli_ref, &cfg, source),
-        crate::Commands::Init { source, clone } => init::run(&cli_ref, &cfg, source, clone),
+        crate::Commands::Init { source, clone, remote } => init::run(&cli_ref, &cfg, source, clone, remote),
         crate::Commands::Add { path } => add::run(&cli_ref, &cfg, path),
         crate::Commands::Status { source } => status::run(&cli_ref, &cfg, source),
         crate::Commands::Watch { source } => watch::run(&cli_ref, &cfg, source),
@@ -49,10 +50,11 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
             doctor::run(&cli_ref);
             Ok(())
         }
+        crate::Commands::Sync { message, source, dry_run } => sync::run(&cli_ref, &cfg, message, source, dry_run),
     }
 }
 
-fn resolve_source(_cli: &CliRef, source: Option<std::path::PathBuf>) -> dwell_core::Result<std::path::PathBuf> {
+pub fn resolve_source(_cli: &CliRef, source: Option<std::path::PathBuf>) -> dwell_core::Result<std::path::PathBuf> {
     source.or_else(|| {
         dirs::data_dir().map(|d| d.join("dwell"))
     }).ok_or_else(|| dwell_core::DwellError::InvalidConfig(
