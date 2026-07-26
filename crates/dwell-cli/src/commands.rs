@@ -156,8 +156,13 @@ mod doctor {
 
         let source_path = dirs::data_dir().map(|d| d.join("dwell"));
         match &source_path {
-            Some(p) if p.exists() => out.success(&format!("Source directory exists at {}", p.display())),
-            Some(p) => out.info(&format!("Source directory not yet created at {}", p.display())),
+            Some(p) if p.exists() => {
+                out.success(&format!("Source directory exists at {}", p.display()))
+            }
+            Some(p) => out.info(&format!(
+                "Source directory not yet created at {}",
+                p.display()
+            )),
             None => out.error("Cannot determine data directory"),
         }
 

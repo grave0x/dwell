@@ -67,7 +67,11 @@ impl Output {
         if self.json_mode {
             println!(r#"{{"level":"error","message":"{}"}}"#, msg);
         } else {
-            eprintln!(" {} {}", style("✗").red().bright(), style(msg).red().bright());
+            eprintln!(
+                " {} {}",
+                style("✗").red().bright(),
+                style(msg).red().bright()
+            );
         }
     }
 
@@ -77,12 +81,12 @@ impl Output {
             return;
         }
         if self.json_mode {
-            println!(r#"{{"level":"step","phase":"{}","message":"{}"}}"#, phase, msg);
-        } else {
-            eprintln!(" {} {}",
-                style(phase).magenta().bright(),
-                style(msg).bold(),
+            println!(
+                r#"{{"level":"step","phase":"{}","message":"{}"}}"#,
+                phase, msg
             );
+        } else {
+            eprintln!(" {} {}", style(phase).magenta().bright(), style(msg).bold(),);
         }
     }
 
@@ -106,7 +110,8 @@ impl Output {
             eprintln!(" {} {}", icon, path);
         } else {
             let err = result.error.as_deref().unwrap_or("unknown error");
-            eprintln!(" {} {} — {}",
+            eprintln!(
+                " {} {} — {}",
                 style("✗").red().bright(),
                 path,
                 style(err).red().dim(),
@@ -137,10 +142,7 @@ impl Output {
         if self.json_mode {
             println!(r#"{{"level":"kv","key":"{}","value":"{}"}}"#, key, value);
         } else {
-            eprintln!("  {} {}",
-                style(key).cyan().dim(),
-                style(value).bold(),
-            );
+            eprintln!("  {} {}", style(key).cyan().dim(), style(value).bold(),);
         }
     }
 
