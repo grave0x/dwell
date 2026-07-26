@@ -193,6 +193,20 @@ pub enum Commands {
         /// Shell to generate completions for [possible values: bash, zsh, fish, powershell, elvish]
         shell: clap_complete::Shell,
     },
+
+    /// Import dotfiles from a remote GitHub repository
+    Import {
+        /// Repository URL (e.g. https://github.com/user/dotfiles)
+        url: String,
+
+        /// Overwrite existing files without asking
+        #[arg(long)]
+        all: bool,
+
+        /// Preview what would be imported without copying
+        #[arg(long)]
+        dry_run: bool,
+    },
 }
 
 #[derive(Subcommand)]
