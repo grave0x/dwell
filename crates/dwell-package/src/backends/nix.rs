@@ -38,7 +38,9 @@ impl PackageManager for NixBackend {
         let output = Command::new("nix")
             .args(["profile", "list"])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("nix profile list failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("nix profile list failed: {}", e))
+            })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let packages = stdout
@@ -72,7 +74,9 @@ impl PackageManager for NixBackend {
         let output = Command::new("nix")
             .args(["profile", "install", &format!("nixpkgs#{}", package)])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("nix profile install failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("nix profile install failed: {}", e))
+            })?;
 
         Ok(output.status.success())
     }
@@ -81,7 +85,9 @@ impl PackageManager for NixBackend {
         let output = Command::new("nix")
             .args(["profile", "remove", package])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("nix profile remove failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("nix profile remove failed: {}", e))
+            })?;
 
         Ok(output.status.success())
     }
@@ -90,7 +96,9 @@ impl PackageManager for NixBackend {
         let output = Command::new("nix")
             .args(["search", "nixpkgs", query])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("nix search failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("nix search failed: {}", e))
+            })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let packages = stdout

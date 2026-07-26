@@ -1,6 +1,6 @@
-pub mod apt;
-pub mod pacman;
-pub mod brew;
-pub mod nix;
-pub mod cargo;
 pub mod apk;
+pub mod apt;
+pub mod brew;
+pub mod cargo;
+pub mod nix;
+pub mod pacman;

@@ -23,15 +23,12 @@ impl TemplateEngine for TeraEngine {
     }
 
     fn render(&self, template: &str, data: &serde_json::Value) -> Result<String> {
-        let context = Context::from_serialize(data)
-            .map_err(|e| dwell_core::DwellError::Template(format!(
-                "Failed to create Tera context: {}", e
-            )))?;
+        let context = Context::from_serialize(data).map_err(|e| {
+            dwell_core::DwellError::Template(format!("Failed to create Tera context: {}", e))
+        })?;
 
         Tera::one_off(template, &context, false)
-            .map_err(|e| dwell_core::DwellError::Template(format!(
-                "Tera render error: {}", e
-            )))
+            .map_err(|e| dwell_core::DwellError::Template(format!("Tera render error: {}", e)))
     }
 
     fn validate(&self, template: &str) -> std::result::Result<(), String> {
@@ -65,7 +62,10 @@ mod tests {
         let engine = TeraEngine::new();
         // An unclosed `{% if %}` block is genuinely invalid Tera syntax
         let result = engine.validate("{% if x %}");
-        assert!(result.is_err(), "Expected validation error for unclosed if block");
+        assert!(
+            result.is_err(),
+            "Expected validation error for unclosed if block"
+        );
     }
 
     #[test]

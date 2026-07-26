@@ -63,7 +63,9 @@ impl DepsConfig {
 
     /// Collect all unique required packages across all entries.
     pub fn all_requires(&self) -> Vec<String> {
-        let mut pkgs: Vec<String> = self.deps.values()
+        let mut pkgs: Vec<String> = self
+            .deps
+            .values()
             .flat_map(|d| d.requires.iter().cloned())
             .collect();
         pkgs.sort();
@@ -73,7 +75,9 @@ impl DepsConfig {
 
     /// Collect all unique tools across all entries.
     pub fn all_tools(&self) -> Vec<String> {
-        let mut tools: Vec<String> = self.deps.values()
+        let mut tools: Vec<String> = self
+            .deps
+            .values()
             .flat_map(|d| d.tools.iter().cloned())
             .collect();
         tools.sort();

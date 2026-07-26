@@ -55,9 +55,9 @@ pub fn run(
     out.success(&format!("Committed: {}", &commit_id[..8]));
 
     // Push if remote is configured
-    if remote_url.is_some() {
+    if let Some(url) = remote_url {
         repo.push()?;
-        out.success(&format!("Pushed to {}", remote_url.unwrap()));
+        out.success(&format!("Pushed to {}", url));
     }
 
     Ok(())

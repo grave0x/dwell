@@ -3,8 +3,8 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use dwell_core::{Entry, EntryKind, Result, hash_content};
 use super::ignore::IgnorePatterns;
+use dwell_core::{hash_content, Entry, EntryKind, Result};
 
 /// Manages the source directory — the directory containing dotfile templates.
 pub struct SourceDir {
@@ -19,13 +19,9 @@ impl SourceDir {
         let chezmoi_ignore = root.join(".chezmoiignore");
 
         let ignore = if ignore_path.exists() {
-            IgnorePatterns::from_file(&ignore_path).map_err(|e| {
-                dwell_core::DwellError::Io(e)
-            })?
+            IgnorePatterns::from_file(&ignore_path).map_err(dwell_core::DwellError::Io)?
         } else if chezmoi_ignore.exists() {
-            IgnorePatterns::from_file(&chezmoi_ignore).map_err(|e| {
-                dwell_core::DwellError::Io(e)
-            })?
+            IgnorePatterns::from_file(&chezmoi_ignore).map_err(dwell_core::DwellError::Io)?
         } else {
             IgnorePatterns::default()
         };
@@ -100,19 +96,18 @@ impl SourceDir {
     /// Read the raw content of a source entry.
     pub fn read_entry(&self, source_path: &str) -> Result<Vec<u8>> {
         let full_path = self.root.join(source_path);
-        fs::read(&full_path).map_err(|e| {
-            dwell_core::DwellError::Io(e)
-        })
+        fs::read(&full_path).map_err(dwell_core::DwellError::Io)
     }
 
     /// Add a file from the filesystem to the source directory.
     /// Copies the file in, applying the dot_ prefix convention.
     pub fn add_file(&self, target_path: &Path, home: &Path) -> Result<Entry> {
-        let relative = target_path
-            .strip_prefix(home)
-            .map_err(|_| dwell_core::DwellError::InvalidConfig(
-                format!("Path {} is not under home directory", target_path.display())
-            ))?;
+        let relative = target_path.strip_prefix(home).map_err(|_| {
+            dwell_core::DwellError::InvalidConfig(format!(
+                "Path {} is not under home directory",
+                target_path.display()
+            ))
+        })?;
 
         let relative_str = relative.to_string_lossy();
         // Apply prefix: .bashrc → dot_bashrc, .config/nvim/init.lua → dot_config/nvim/init.lua
@@ -150,7 +145,6 @@ impl SourceDir {
 
     /// Detect dotter-compatible source directory.
     pub fn detect_dotter(root: &Path) -> bool {
-        root.join(".dotter").is_dir()
-            || root.join("global.toml").exists()
+        root.join(".dotter").is_dir() || root.join("global.toml").exists()
     }
 }

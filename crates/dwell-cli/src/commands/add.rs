@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use crate::commands::{CliRef, resolve_source, resolve_home};
+use crate::commands::{resolve_home, resolve_source, CliRef};
 use crate::output::Output;
 
 pub fn run(cli: &CliRef, _cfg: &dwell_core::Config, path: PathBuf) -> dwell_core::Result<()> {
@@ -23,7 +23,11 @@ pub fn run(cli: &CliRef, _cfg: &dwell_core::Config, path: PathBuf) -> dwell_core
     let sd = dwell_store::SourceDir::open(&source_dir)?;
     let entry = sd.add_file(&full_path, &home)?;
 
-    out.success(&format!("Added: {} → {}", full_path.display(), entry.source_path));
+    out.success(&format!(
+        "Added: {} → {}",
+        full_path.display(),
+        entry.source_path
+    ));
 
     // Also stage in git
     match dwell_store::GitRepo::open(&source_dir.join(".git")) {

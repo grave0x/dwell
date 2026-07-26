@@ -32,7 +32,8 @@ fn analyze_entry(_source_path: &str, content: &str) -> DepEntry {
     for line in content.lines() {
         let trimmed = line.trim();
         // source foo or . foo
-        if let Some(sourced) = trimmed.strip_prefix("source ")
+        if let Some(sourced) = trimmed
+            .strip_prefix("source ")
             .or_else(|| trimmed.strip_prefix(". "))
         {
             let path = sourced.trim_matches(&['"', '\''][..]).to_string();
@@ -54,7 +55,9 @@ fn analyze_entry(_source_path: &str, content: &str) -> DepEntry {
         let trimmed = line.trim();
         // Detect alias references
         if trimmed.starts_with("alias ") {
-            for known_tool in &["bat", "lsd", "eza", "ripgrep", "fd", "fzf", "zoxide", "direnv"] {
+            for known_tool in &[
+                "bat", "lsd", "eza", "ripgrep", "fd", "fzf", "zoxide", "direnv",
+            ] {
                 if trimmed.contains(known_tool) {
                     tools.push(known_tool.to_string());
                 }
@@ -70,7 +73,9 @@ fn analyze_entry(_source_path: &str, content: &str) -> DepEntry {
         }
         // Detect has/require binary checks
         if trimmed.contains("has ") || trimmed.contains("require ") {
-            for known_tool in &["bat", "lsd", "eza", "rg", "fd", "fzf", "zoxide", "direnv", "starship"] {
+            for known_tool in &[
+                "bat", "lsd", "eza", "rg", "fd", "fzf", "zoxide", "direnv", "starship",
+            ] {
                 if trimmed.contains(known_tool) {
                     tools.push(known_tool.to_string());
                 }
@@ -86,13 +91,16 @@ fn analyze_entry(_source_path: &str, content: &str) -> DepEntry {
     tools.sort();
     tools.dedup();
 
-    DepEntry { requires, sources, tools, custom: vec![] }
+    DepEntry {
+        requires,
+        sources,
+        tools,
+        custom: vec![],
+    }
 }
 
 /// Scan a source directory and generate/update deps.toml.
 pub fn scan_source(source_root: &Path) -> Result<DepsConfig> {
-    
-
     let mut deps_map = HashMap::new();
 
     // Walk source directory
@@ -102,7 +110,8 @@ pub fn scan_source(source_root: &Path) -> Result<DepsConfig> {
         .filter(|e| e.file_type().is_file())
     {
         let path = entry.path();
-        let rel = path.strip_prefix(source_root)
+        let rel = path
+            .strip_prefix(source_root)
             .map(|p| p.to_string_lossy().to_string())
             .unwrap_or_default();
 
@@ -138,7 +147,10 @@ mod tests {
 
     #[test]
     fn test_analyze_shebang_python() {
-        let entry = analyze_entry("dot_config/nvim/init.lua", "#!/usr/bin/env python3\nprint('hello')\n");
+        let entry = analyze_entry(
+            "dot_config/nvim/init.lua",
+            "#!/usr/bin/env python3\nprint('hello')\n",
+        );
         assert!(entry.requires.contains(&"python3".to_string()));
     }
 
@@ -167,18 +179,24 @@ mod tests {
     #[test]
     fn test_deps_aggregation() {
         let mut deps = DepsConfig::default();
-        deps.deps.insert("dot_bashrc".into(), DepEntry {
-            requires: vec!["bash".into(), "git".into()],
-            sources: vec![],
-            tools: vec!["starship".into()],
-            custom: vec![],
-        });
-        deps.deps.insert("dot_config/nvim/init.lua".into(), DepEntry {
-            requires: vec!["neovim".into()],
-            sources: vec![],
-            tools: vec!["ripgrep".into()],
-            custom: vec![],
-        });
+        deps.deps.insert(
+            "dot_bashrc".into(),
+            DepEntry {
+                requires: vec!["bash".into(), "git".into()],
+                sources: vec![],
+                tools: vec!["starship".into()],
+                custom: vec![],
+            },
+        );
+        deps.deps.insert(
+            "dot_config/nvim/init.lua".into(),
+            DepEntry {
+                requires: vec!["neovim".into()],
+                sources: vec![],
+                tools: vec!["ripgrep".into()],
+                custom: vec![],
+            },
+        );
         let all = deps.all_requires();
         assert!(all.contains(&"bash".to_string()));
         assert!(all.contains(&"git".to_string()));
