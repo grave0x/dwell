@@ -7,6 +7,7 @@ mod add;
 mod status;
 mod watch;
 mod package;
+mod deps;
 
 /// A cheap reference-like view of CLI options, avoiding partial moves.
 pub struct CliRef {
@@ -24,11 +25,12 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
     match command {
         crate::Commands::Apply { source, force } => apply::run(&cli_ref, &cfg, source, force),
         crate::Commands::Diff { source } => diff::run(&cli_ref, &cfg, source),
-        crate::Commands::Init { source, clone } => init::run(&cli_ref, &cfg, source, clone),
+        crate::Commands::Init { source, clone, remote } => init::run(&cli_ref, &cfg, source, clone, remote),
         crate::Commands::Add { path } => add::run(&cli_ref, &cfg, path),
         crate::Commands::Status { source } => status::run(&cli_ref, &cfg, source),
         crate::Commands::Watch { source } => watch::run(&cli_ref, &cfg, source),
         crate::Commands::Package { action } => package::run(&cli_ref, &cfg, action),
+        crate::Commands::Deps { action } => deps::run(&cli_ref, &cfg, action),
         crate::Commands::Module { .. } => {
             eprintln!("Module management — Phase 2 (coming soon)");
             Ok(())
@@ -49,10 +51,17 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
             doctor::run(&cli_ref);
             Ok(())
         }
+        crate::Commands::Sync { message, source, dry_run } => {
+            // Sync not implemented on this branch yet
+            let _ = (message, source, dry_run);
+            eprintln!("Sync command — coming soon");
+            Ok(())
+        }
+        crate::Commands::Deps { action } => deps::run(&cli_ref, &cfg, action),
     }
 }
 
-fn resolve_source(_cli: &CliRef, source: Option<std::path::PathBuf>) -> dwell_core::Result<std::path::PathBuf> {
+pub fn resolve_source(_cli: &CliRef, source: Option<std::path::PathBuf>) -> dwell_core::Result<std::path::PathBuf> {
     source.or_else(|| {
         dirs::data_dir().map(|d| d.join("dwell"))
     }).ok_or_else(|| dwell_core::DwellError::InvalidConfig(

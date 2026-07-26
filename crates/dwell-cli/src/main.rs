@@ -64,6 +64,10 @@ pub enum Commands {
         /// Clone from remote repository URL
         #[arg(long)]
         clone: Option<String>,
+
+        /// Remote URL to set as origin (e.g. https://github.com/user/dotfiles.git)
+        #[arg(long)]
+        remote: Option<String>,
     },
 
     /// Add a file from the filesystem to the source directory
@@ -116,6 +120,55 @@ pub enum Commands {
 
     /// Show system health and configuration status
     Doctor,
+
+    /// Commit and push changes to the configured remote
+    Sync {
+        /// Custom commit message [default: auto-generated]
+        #[arg(short, long)]
+        message: Option<String>,
+
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+
+        /// Preview what would be synced without actually syncing
+        #[arg(long)]
+        dry_run: bool,
+    },
+
+    /// Manage dotfile dependencies (scan, install, audit, bundle)
+    Deps {
+        #[command(subcommand)]
+        action: DepsCommand,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum DepsCommand {
+    /// Auto-detect dependencies from source entries and generate deps.toml
+    Scan {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+    },
+
+    /// Install required packages from deps.toml
+    Install {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+
+        /// Also install declared tools (not just requires)
+        #[arg(long)]
+        tools: bool,
+    },
+
+    /// Check current system for missing required tools
+    Audit {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+    },
 }
 
 #[derive(Subcommand)]

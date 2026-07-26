@@ -5,8 +5,9 @@ use dwell_core::DwellError;
 use crate::commands::{CliRef, resolve_home};
 use crate::output::Output;
 
-pub fn run(cli: &CliRef, _cfg: &dwell_core::Config, source: Option<PathBuf>, clone_url: Option<String>) -> dwell_core::Result<()> {
+pub fn run(cli: &CliRef, _cfg: &dwell_core::Config, source: Option<PathBuf>, clone_url: Option<String>, _remote_url: Option<String>) -> dwell_core::Result<()> {
     let _ = _cfg;
+    let _ = _remote_url;
     let out = Output::new(cli.json, cli.verbose, cli.quiet);
 
     let source_dir = source.unwrap_or_else(|| {
