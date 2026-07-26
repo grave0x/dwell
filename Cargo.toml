@@ -38,7 +38,7 @@ tempfile = "3"
 clap = { version = "4", features = ["derive"] }
 indicatif = "0.18"
 console = "0.15"
-dialoguer = "0.11"
+dialoguer = "0.12"
 
 # Templates
 handlebars = "6"
