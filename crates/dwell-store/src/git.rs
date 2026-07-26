@@ -130,7 +130,7 @@ impl GitRepo {
     pub fn remote_url(&self) -> Result<Option<String>> {
         let repo = git2::Repository::open(&self.path).map_err(git_err)?;
         let result = match repo.find_remote("origin") {
-            Ok(remote) => remote.url().map(|s| s.to_string()),
+            Ok(remote) => remote.url().ok().map(|s| s.to_string()),
             Err(_) => None,
         };
         Ok(result)
