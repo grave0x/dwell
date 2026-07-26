@@ -146,6 +146,47 @@ pub enum Commands {
         #[command(subcommand)]
         action: SetupCommand,
     },
+
+    /// Full system setup: scan deps → install packages → apply dotfiles → sync
+    Deploy {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+
+        /// Skip dependency installation
+        #[arg(long)]
+        no_deps: bool,
+
+        /// Skip package restore from setup capture
+        #[arg(long)]
+        no_packages: bool,
+
+        /// Preview without making changes
+        #[arg(long)]
+        dry_run: bool,
+    },
+
+    /// Reset deployed dotfiles to source state
+    Reset {
+        /// Path to reset (file or directory relative to home)
+        path: Option<PathBuf>,
+
+        /// Reset all managed files
+        #[arg(long)]
+        all: bool,
+
+        /// Remove targets not in source (cleanup orphans)
+        #[arg(long)]
+        stray: bool,
+
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+
+        /// Preview without modifying
+        #[arg(long)]
+        dry_run: bool,
+    },
 }
 
 #[derive(Subcommand)]
