@@ -1,0 +1,12 @@
+[package]
+name = "dwell-secrets"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+dwell-core.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+age.workspace = true
+tracing.workspace = true

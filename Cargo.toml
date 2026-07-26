@@ -1,0 +1,80 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/dwell-core",
+    "crates/dwell-store",
+    "crates/dwell-template",
+    "crates/dwell-deploy",
+    "crates/dwell-module",
+    "crates/dwell-package",
+    "crates/dwell-secrets",
+    "crates/dwell-plugin",
+    "crates/dwell-cli",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/dwell/dwell"
+rust-version = "1.80"
+
+[workspace.dependencies]
+# Core
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+dirs = "5"
+regex = "1"
+walkdir = "2"
+sha2 = "0.10"
+hex = "0.4"
+tempfile = "3"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+indicatif = "0.17"
+console = "0.15"
+dialoguer = "0.11"
+
+# Templates
+handlebars = "6"
+minijinja = "2"
+tera = "1"
+rhai = "1"
+
+# File ops
+notify = "7"
+
+# Git
+git2 = "0.19"
+
+# Secrets
+age = "0.10"
+
+# Plugins
+wasmtime = "24"
+mlua = { version = "0.10", features = ["lua54"] }
+
+# Networking
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+
+# Internal crates
+dwell-core = { path = "crates/dwell-core" }
+dwell-store = { path = "crates/dwell-store" }
+dwell-template = { path = "crates/dwell-template" }
+dwell-deploy = { path = "crates/dwell-deploy" }
+dwell-module = { path = "crates/dwell-module" }
+dwell-package = { path = "crates/dwell-package" }
+dwell-secrets = { path = "crates/dwell-secrets" }
+dwell-plugin = { path = "crates/dwell-plugin" }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

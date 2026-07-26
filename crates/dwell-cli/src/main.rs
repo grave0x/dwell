@@ -1,0 +1,194 @@
+//! dwell-cli — Unified dotfile manager command-line interface.
+
+use std::path::PathBuf;
+
+use clap::{Parser, Subcommand};
+
+mod commands;
+pub mod output;
+
+/// dwell — unify your dotfiles across machines with type-safe modules,
+/// cross-platform packages, and a plugin system.
+#[derive(Parser)]
+#[command(name = "dwell", version, about, long_about = None)]
+pub struct Cli {
+    /// Path to dwell.toml configuration file
+    #[arg(short, long, default_value = "~/.config/dwell/dwell.toml")]
+    pub config: PathBuf,
+
+    /// Preview changes without applying
+    #[arg(short = 'd', long)]
+    pub dry_run: bool,
+
+    /// Increase verbosity (use -v, -vv, -vvv)
+    #[arg(short, long, action = clap::ArgAction::Count)]
+    pub verbose: u8,
+
+    /// Suppress non-error output
+    #[arg(short, long)]
+    pub quiet: bool,
+
+    /// Machine-readable JSON output
+    #[arg(long)]
+    pub json: bool,
+
+    #[command(subcommand)]
+    pub command: Commands,
+}
+
+#[derive(Subcommand)]
+pub enum Commands {
+    /// Deploy dotfiles to target locations
+    Apply {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+
+        /// Force overwrite even if content differs
+        #[arg(short, long)]
+        force: bool,
+    },
+
+    /// Show differences between source and filesystem
+    Diff {
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+    },
+
+    /// Initialize a new dwell configuration
+    Init {
+        /// Source directory path [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+
+        /// Clone from remote repository URL
+        #[arg(long)]
+        clone: Option<String>,
+    },
+
+    /// Add a file from the filesystem to the source directory
+    Add {
+        /// Path to add (relative to home or absolute)
+        path: PathBuf,
+    },
+
+    /// Show deployment status — what's in sync, what's not
+    Status {
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+    },
+
+    /// Watch source directory and auto-apply on changes
+    Watch {
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+    },
+
+    /// Manage declared packages
+    Package {
+        #[command(subcommand)]
+        action: PackageCommand,
+    },
+
+    /// Manage and validate modules
+    Module {
+        #[command(subcommand)]
+        action: ModuleCommand,
+    },
+
+    /// Manage plugins
+    Plugin {
+        #[command(subcommand)]
+        action: PluginCommand,
+    },
+
+    /// Encrypt, decrypt, or manage secrets
+    Secret {
+        #[command(subcommand)]
+        action: SecretCommand,
+    },
+
+    /// List, rollback, or manage generations
+    Generation {
+        #[command(subcommand)]
+        action: GenerationCommand,
+    },
+
+    /// Show system health and configuration status
+    Doctor,
+}
+
+#[derive(Subcommand)]
+pub enum PackageCommand {
+    /// Install declared packages
+    Install,
+    /// List installed vs declared packages
+    List,
+    /// Remove declared packages
+    Remove,
+    /// Show package drift (declared vs installed)
+    Diff,
+}
+
+#[derive(Subcommand)]
+pub enum ModuleCommand {
+    /// List available modules
+    List,
+    /// Show module details
+    Info { name: String },
+    /// Validate module configuration
+    Validate,
+}
+
+#[derive(Subcommand)]
+pub enum PluginCommand {
+    /// Install a plugin
+    Install { name: String },
+    /// List installed plugins
+    List,
+    /// Initialize a new plugin project
+    Init { name: String },
+}
+
+#[derive(Subcommand)]
+pub enum SecretCommand {
+    /// Encrypt a file
+    Encrypt { path: PathBuf },
+    /// Decrypt a file
+    Decrypt { path: PathBuf },
+    /// Generate a new age identity
+    Keygen,
+}
+
+#[derive(Subcommand)]
+pub enum GenerationCommand {
+    /// List all saved generations
+    List,
+    /// Roll back to a previous generation
+    Rollback { id: Option<u64> },
+    /// Delete old generations
+    Prune { keep: Option<usize> },
+}
+
+fn main() {
+    let cli = Cli::parse();
+
+    // Configure logging
+    let level = match cli.verbose {
+        0 => "warn",
+        1 => "info",
+        2 => "debug",
+        _ => "trace",
+    };
+
+    tracing_subscriber::fmt()
+        .with_env_filter(format!("dwell={}", level))
+        .with_writer(std::io::stderr)
+        .without_time()
+        .init();
+
+    if let Err(e) = commands::run(cli) {
+        eprintln!("dwell: error: {}", e);
+        std::process::exit(1);
+    }
+}

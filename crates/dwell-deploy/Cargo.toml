@@ -1,0 +1,18 @@
+[package]
+name = "dwell-deploy"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+dwell-core.workspace = true
+dwell-store.workspace = true
+dwell-template.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+notify.workspace = true
+walkdir.workspace = true
+sha2.workspace = true
+hex.workspace = true

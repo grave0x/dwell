@@ -1,0 +1,11 @@
+/target/
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+*.iml
+*.age
+# temp test files
+/tmp/
+.playwright-mcp/
