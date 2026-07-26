@@ -42,19 +42,13 @@ impl Default for Config {
             modules: ModuleConfig {
                 enabled: HashMap::new(),
             },
-            packages: PackageConfig {
-                system: Vec::new(),
-            },
-            secrets: SecretConfig {
-                files: Vec::new(),
-            },
+            packages: PackageConfig { system: Vec::new() },
+            secrets: SecretConfig { files: Vec::new() },
             plugins: PluginConfig {
                 wasm: Vec::new(),
                 lua: Vec::new(),
             },
-            generations: GenerationConfig {
-                keep: 10,
-            },
+            generations: GenerationConfig { keep: 10 },
         }
     }
 }
@@ -64,14 +58,15 @@ impl Config {
     /// Supports `~` expansion for the home directory.
     pub fn load(path: &Path) -> crate::Result<Self> {
         let expanded = expand_tilde(path);
-        let content = fs::read_to_string(&expanded)
-            .map_err(|e| DwellError::InvalidConfig(format!(
-                "Failed to read config at {}: {}", expanded.display(), e
-            )))?;
+        let content = fs::read_to_string(&expanded).map_err(|e| {
+            DwellError::InvalidConfig(format!(
+                "Failed to read config at {}: {}",
+                expanded.display(),
+                e
+            ))
+        })?;
         let cfg: Config = toml::from_str(&content)
-            .map_err(|e| DwellError::InvalidConfig(format!(
-                "Failed to parse config: {}", e
-            )))?;
+            .map_err(|e| DwellError::InvalidConfig(format!("Failed to parse config: {}", e)))?;
         Ok(cfg)
     }
 }

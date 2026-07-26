@@ -92,7 +92,8 @@ pub fn run(
         let state = dwell_store::DeployState::load(&state_path)
             .unwrap_or_else(|_| dwell_store::DeployState::new());
 
-        let managed_targets: std::collections::HashSet<PathBuf> = entries.iter()
+        let managed_targets: std::collections::HashSet<PathBuf> = entries
+            .iter()
             .map(|e| source_to_target(&e.source_path, &home))
             .collect();
 

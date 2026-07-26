@@ -48,7 +48,9 @@ impl ModuleRegistry {
         match self.modules.get(id) {
             Some(module) => module.generate(values),
             None => Err(dwell_core::DwellError::Module(format!(
-                "Unknown module: {}. Available: {}", id, self.list().join(", ")
+                "Unknown module: {}. Available: {}",
+                id,
+                self.list().join(", ")
             ))),
         }
     }

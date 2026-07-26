@@ -1,18 +1,18 @@
 use crate::Cli;
 
+mod add;
 mod apply;
+mod deploy;
+mod deps;
 mod diff;
 mod init;
-mod add;
-mod status;
-mod watch;
-mod package;
-mod sync;
-mod deps;
-mod setup;
-mod deploy;
-mod reset;
 mod module_cmd;
+mod package;
+mod reset;
+mod setup;
+mod status;
+mod sync;
+mod watch;
 
 /// A cheap reference-like view of CLI options, avoiding partial moves.
 pub struct CliRef {
@@ -23,22 +23,49 @@ pub struct CliRef {
 }
 
 pub fn run(cli: Cli) -> dwell_core::Result<()> {
-    let Cli { config: _config, dry_run, verbose, quiet, json, command } = cli;
-    let cli_ref = CliRef { dry_run, verbose, quiet, json };
+    let Cli {
+        config: _config,
+        dry_run,
+        verbose,
+        quiet,
+        json,
+        command,
+    } = cli;
+    let cli_ref = CliRef {
+        dry_run,
+        verbose,
+        quiet,
+        json,
+    };
     let cfg = dwell_core::Config::load(&_config)?;
 
     match command {
         crate::Commands::Apply { source, force } => apply::run(&cli_ref, &cfg, source, force),
         crate::Commands::Diff { source } => diff::run(&cli_ref, &cfg, source),
-        crate::Commands::Init { source, clone, remote } => init::run(&cli_ref, &cfg, source, clone, remote),
+        crate::Commands::Init {
+            source,
+            clone,
+            remote,
+        } => init::run(&cli_ref, &cfg, source, clone, remote),
         crate::Commands::Add { path } => add::run(&cli_ref, &cfg, path),
         crate::Commands::Status { source } => status::run(&cli_ref, &cfg, source),
         crate::Commands::Watch { source } => watch::run(&cli_ref, &cfg, source),
         crate::Commands::Package { action } => package::run(&cli_ref, &cfg, action),
         crate::Commands::Deps { action } => deps::run(&cli_ref, &cfg, action),
         crate::Commands::Setup { action } => setup::run(&cli_ref, &cfg, action),
-        crate::Commands::Deploy { source, no_deps, no_packages, dry_run } => deploy::run(&cli_ref, &cfg, source, no_deps, no_packages, dry_run),
-        crate::Commands::Reset { path, all, stray, source, dry_run } => reset::run(&cli_ref, &cfg, path, all, stray, source, dry_run),
+        crate::Commands::Deploy {
+            source,
+            no_deps,
+            no_packages,
+            dry_run,
+        } => deploy::run(&cli_ref, &cfg, source, no_deps, no_packages, dry_run),
+        crate::Commands::Reset {
+            path,
+            all,
+            stray,
+            source,
+            dry_run,
+        } => reset::run(&cli_ref, &cfg, path, all, stray, source, dry_run),
         crate::Commands::Completion { shell } => {
             use clap::CommandFactory;
             let mut cmd = crate::Cli::command();
@@ -63,16 +90,25 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
             doctor::run(&cli_ref);
             Ok(())
         }
-        crate::Commands::Sync { message, source, dry_run } => sync::run(&cli_ref, &cfg, message, source, dry_run),
+        crate::Commands::Sync {
+            message,
+            source,
+            dry_run,
+        } => sync::run(&cli_ref, &cfg, message, source, dry_run),
     }
 }
 
-pub fn resolve_source(_cli: &CliRef, source: Option<std::path::PathBuf>) -> dwell_core::Result<std::path::PathBuf> {
-    source.or_else(|| {
-        dirs::data_dir().map(|d| d.join("dwell"))
-    }).ok_or_else(|| dwell_core::DwellError::InvalidConfig(
-        "Could not determine source directory. Use --source to specify.".into()
-    ))
+pub fn resolve_source(
+    _cli: &CliRef,
+    source: Option<std::path::PathBuf>,
+) -> dwell_core::Result<std::path::PathBuf> {
+    source
+        .or_else(|| dirs::data_dir().map(|d| d.join("dwell")))
+        .ok_or_else(|| {
+            dwell_core::DwellError::InvalidConfig(
+                "Could not determine source directory. Use --source to specify.".into(),
+            )
+        })
 }
 
 fn resolve_home() -> std::path::PathBuf {
@@ -114,8 +150,7 @@ mod doctor {
         }
 
         // Check existing dwell config
-        let config_path = dirs::config_dir()
-            .map(|d| d.join("dwell").join("dwell.toml"));
+        let config_path = dirs::config_dir().map(|d| d.join("dwell").join("dwell.toml"));
         match &config_path {
             Some(p) if p.exists() => println!("  ✓ dwell.toml found at {}", p.display()),
             Some(p) => println!("  - dwell.toml not yet created at {}", p.display()),

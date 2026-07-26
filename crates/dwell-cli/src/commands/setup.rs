@@ -15,9 +15,9 @@ struct SetupManifest {
     os: String,
     kernel: String,
     backend: String,
-    sys_packages: HashMap<String, Vec<String>>,   // backend → list of packages
-    lang_tools: HashMap<String, Vec<String>>,      // category → list of tools
-    manual_bins: Vec<String>,                       // files in user bin dirs
+    sys_packages: HashMap<String, Vec<String>>, // backend → list of packages
+    lang_tools: HashMap<String, Vec<String>>,   // category → list of tools
+    manual_bins: Vec<String>,                   // files in user bin dirs
 }
 
 impl SetupManifest {
@@ -28,7 +28,9 @@ impl SetupManifest {
             .unwrap_or_default();
         SetupManifest {
             captured_at: now,
-            hostname: hostname::get().map(|h| h.to_string_lossy().to_string()).unwrap_or_default(),
+            hostname: hostname::get()
+                .map(|h| h.to_string_lossy().to_string())
+                .unwrap_or_default(),
             os: std::env::consts::OS.to_string(),
             kernel: std::env::consts::FAMILY.to_string(),
             backend: backend.to_string(),
@@ -67,7 +69,9 @@ impl SetupManifest {
 
     #[allow(dead_code)]
     fn all_packages(&self) -> Vec<String> {
-        let mut pkgs: Vec<String> = self.sys_packages.values()
+        let mut pkgs: Vec<String> = self
+            .sys_packages
+            .values()
             .flat_map(|v| v.iter().cloned())
             .collect();
         pkgs.sort();
@@ -77,11 +81,13 @@ impl SetupManifest {
 }
 
 fn resolve_source(source: Option<PathBuf>) -> dwell_core::Result<PathBuf> {
-    source.or_else(|| {
-        dirs::data_dir().map(|d| d.join("dwell"))
-    }).ok_or_else(|| dwell_core::DwellError::InvalidConfig(
-        "Could not determine source directory. Use --source to specify.".into()
-    ))
+    source
+        .or_else(|| dirs::data_dir().map(|d| d.join("dwell")))
+        .ok_or_else(|| {
+            dwell_core::DwellError::InvalidConfig(
+                "Could not determine source directory. Use --source to specify.".into(),
+            )
+        })
 }
 
 pub fn run(
@@ -92,12 +98,18 @@ pub fn run(
     let out = Output::new(cli.json, cli.verbose, cli.quiet);
 
     match action {
-        crate::SetupCommand::Capture { source, no_sys_packages, no_lang_tools, no_manual } => {
-            cmd_capture(&out, source, no_sys_packages, no_lang_tools, no_manual)
-        }
-        crate::SetupCommand::Restore { source, sys_packages, lang_tools, interactive } => {
-            cmd_restore(&out, source, sys_packages, lang_tools, interactive)
-        }
+        crate::SetupCommand::Capture {
+            source,
+            no_sys_packages,
+            no_lang_tools,
+            no_manual,
+        } => cmd_capture(&out, source, no_sys_packages, no_lang_tools, no_manual),
+        crate::SetupCommand::Restore {
+            source,
+            sys_packages,
+            lang_tools,
+            interactive,
+        } => cmd_restore(&out, source, sys_packages, lang_tools, interactive),
         crate::SetupCommand::Diff { source } => cmd_diff(&out, source),
     }
 }
@@ -110,7 +122,10 @@ fn cmd_capture(
     no_manual: bool,
 ) -> dwell_core::Result<()> {
     let source_dir = resolve_source(source)?;
-    out.info(&format!("Capturing system state to {}", source_dir.join(".dwell/setup").display()));
+    out.info(&format!(
+        "Capturing system state to {}",
+        source_dir.join(".dwell/setup").display()
+    ));
 
     let reg = PackageManagerRegistry::new();
     let backend_id = reg.detect().map(|b| b.id().to_string()).unwrap_or_default();
@@ -125,11 +140,21 @@ fn cmd_capture(
                     Ok(pkgs) => {
                         let names: Vec<String> = pkgs.into_iter().map(|p| p.name).collect();
                         if !names.is_empty() {
-                            out.info(&format!("  Captured {} {} packages", names.len(), backend.id()));
-                            manifest.sys_packages.insert(backend.id().to_string(), names);
+                            out.info(&format!(
+                                "  Captured {} {} packages",
+                                names.len(),
+                                backend.id()
+                            ));
+                            manifest
+                                .sys_packages
+                                .insert(backend.id().to_string(), names);
                         }
                     }
-                    Err(e) => out.warn(&format!("  Failed to list {} packages: {}", backend.id(), e)),
+                    Err(e) => out.warn(&format!(
+                        "  Failed to list {} packages: {}",
+                        backend.id(),
+                        e
+                    )),
                 }
             }
         }
@@ -214,13 +239,16 @@ fn cmd_capture(
                     Err(_) => continue,
                 };
                 for e in read_dir.flatten() {
-                        if e.file_type().map(|t| t.is_file() || t.is_symlink()).unwrap_or(false) {
-                            // Only include non-standard entries (skip distro-managed files)
-                            let name = e.file_name().to_string_lossy().to_string();
-                            if !name.starts_with('.') {
-                                bins.push(name);
-                            }
+                    if e.file_type()
+                        .map(|t| t.is_file() || t.is_symlink())
+                        .unwrap_or(false)
+                    {
+                        // Only include non-standard entries (skip distro-managed files)
+                        let name = e.file_name().to_string_lossy().to_string();
+                        if !name.starts_with('.') {
+                            bins.push(name);
                         }
+                    }
                 }
             }
         }
@@ -241,7 +269,9 @@ fn cmd_capture(
     let total_tools: usize = manifest.lang_tools.values().map(|v| v.len()).sum();
     out.success(&format!(
         "Captured {} packages, {} tools, {} manual bins",
-        total_pkg, total_tools, manifest.manual_bins.len()
+        total_pkg,
+        total_tools,
+        manifest.manual_bins.len()
     ));
     Ok(())
 }
@@ -254,10 +284,12 @@ fn cmd_restore(
     interactive: bool,
 ) -> dwell_core::Result<()> {
     let source_dir = resolve_source(source)?;
-    let manifest = SetupManifest::load(&source_dir)
-        .map_err(|e| dwell_core::DwellError::InvalidConfig(
-            format!("No captured state found. Run 'dwell setup capture' first: {}", e)
-        ))?;
+    let manifest = SetupManifest::load(&source_dir).map_err(|e| {
+        dwell_core::DwellError::InvalidConfig(format!(
+            "No captured state found. Run 'dwell setup capture' first: {}",
+            e
+        ))
+    })?;
 
     out.info(&format!(
         "Restoring from capture (origin: {}, {})",
@@ -287,13 +319,18 @@ fn cmd_restore(
                     ));
                     Some(avail)
                 } else {
-                    out.warn(&format!("  No package manager available. Skipping {} packages from {}", pkgs.len(), backend_id));
+                    out.warn(&format!(
+                        "  No package manager available. Skipping {} packages from {}",
+                        pkgs.len(),
+                        backend_id
+                    ));
                     None
                 }
             };
 
             if let Some(backend) = target {
-                let installed = backend.list_installed()
+                let installed = backend
+                    .list_installed()
                     .map(|p| p.into_iter().map(|x| x.name).collect::<Vec<_>>())
                     .unwrap_or_default();
                 let mut count = 0;
@@ -302,13 +339,20 @@ fn cmd_restore(
                         out.info(&format!("    Already installed: {}", pkg));
                     } else {
                         match backend.install(pkg) {
-                            Ok(true) => { out.success(&format!("    Installed: {}", pkg)); count += 1; }
+                            Ok(true) => {
+                                out.success(&format!("    Installed: {}", pkg));
+                                count += 1;
+                            }
                             Ok(false) => out.warn(&format!("    Failed: {}", pkg)),
                             Err(e) => out.warn(&format!("    Error: {}: {}", pkg, e)),
                         }
                     }
                 }
-                out.success(&format!("  {} package(s) installed via {}", count, backend.id()));
+                out.success(&format!(
+                    "  {} package(s) installed via {}",
+                    count,
+                    backend.id()
+                ));
             }
         }
     }
@@ -337,7 +381,10 @@ fn cmd_restore(
                     }
                 }
                 _ => {
-                    out.info(&format!("    Manual install needed for {}: {:?}", category, tools));
+                    out.info(&format!(
+                        "    Manual install needed for {}: {:?}",
+                        category, tools
+                    ));
                 }
             }
         }
@@ -347,15 +394,11 @@ fn cmd_restore(
     Ok(())
 }
 
-fn cmd_diff(
-    out: &Output,
-    source: Option<PathBuf>,
-) -> dwell_core::Result<()> {
+fn cmd_diff(out: &Output, source: Option<PathBuf>) -> dwell_core::Result<()> {
     let source_dir = resolve_source(source)?;
-    let manifest = SetupManifest::load(&source_dir)
-        .map_err(|e| dwell_core::DwellError::InvalidConfig(
-            format!("No captured state found: {}", e)
-        ))?;
+    let manifest = SetupManifest::load(&source_dir).map_err(|e| {
+        dwell_core::DwellError::InvalidConfig(format!("No captured state found: {}", e))
+    })?;
 
     out.info(&format!(
         "Comparing against capture from {} ({})",
@@ -370,11 +413,11 @@ fn cmd_diff(
 
     for (backend_id, captured_pkgs) in &manifest.sys_packages {
         // Find the matching backend (same id or current)
-        let current = reg.get(backend_id)
-            .or_else(|| reg.detect());
+        let current = reg.get(backend_id).or_else(|| reg.detect());
 
         if let Some(backend) = current {
-            let installed = backend.list_installed()
+            let installed = backend
+                .list_installed()
                 .map(|p| p.into_iter().map(|x| x.name).collect::<Vec<_>>())
                 .unwrap_or_default();
 
@@ -391,13 +434,27 @@ fn cmd_diff(
                 extra.push((backend_id.clone(), (*pkg).clone()));
             }
         } else {
-            out.warn(&format!("  Backend '{}' not available on this system", backend_id));
-            missing.extend(captured_pkgs.iter().map(|p| (backend_id.clone(), p.clone())));
+            out.warn(&format!(
+                "  Backend '{}' not available on this system",
+                backend_id
+            ));
+            missing.extend(
+                captured_pkgs
+                    .iter()
+                    .map(|p| (backend_id.clone(), p.clone())),
+            );
         }
     }
 
-    out.info(&format!("  Captured: {} packages across {} backends", total_captured, manifest.sys_packages.len()));
-    out.info(&format!("  Currently installed: {} packages", total_installed));
+    out.info(&format!(
+        "  Captured: {} packages across {} backends",
+        total_captured,
+        manifest.sys_packages.len()
+    ));
+    out.info(&format!(
+        "  Currently installed: {} packages",
+        total_installed
+    ));
 
     if missing.is_empty() && extra.is_empty() {
         out.success("  No drift — system matches captured state.");
@@ -418,14 +475,22 @@ fn cmd_diff(
 
     // Language tools - simple comparison
     for (category, captured) in &manifest.lang_tools {
-        out.info(&format!("  {}: {} tools captured", category, captured.len()));
+        out.info(&format!(
+            "  {}: {} tools captured",
+            category,
+            captured.len()
+        ));
     }
 
     // Manual bins
     if !manifest.manual_bins.is_empty() {
-        out.info(&format!("  Manual bins: {} tracked", manifest.manual_bins.len()));
+        out.info(&format!(
+            "  Manual bins: {} tracked",
+            manifest.manual_bins.len()
+        ));
         for bin in &manifest.manual_bins {
-            let path = dirs::home_dir().map(|h| h.join("bin").join(bin))
+            let path = dirs::home_dir()
+                .map(|h| h.join("bin").join(bin))
                 .or_else(|| Some(PathBuf::from("/usr/local/bin").join(bin)));
             if let Some(p) = path {
                 if !p.exists() {
@@ -440,10 +505,7 @@ fn cmd_diff(
 
 /// Run a command and return stdout on success.
 fn run_cmd(bin: &str, args: &[&str]) -> Option<String> {
-    let output = std::process::Command::new(bin)
-        .args(args)
-        .output()
-        .ok()?;
+    let output = std::process::Command::new(bin).args(args).output().ok()?;
     if output.status.success() {
         Some(String::from_utf8_lossy(&output.stdout).to_string())
     } else {

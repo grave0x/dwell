@@ -3,7 +3,7 @@
 use std::fs;
 use std::path::PathBuf;
 
-use dwell_core::{Diff, DiffStatus, Result, source_to_target};
+use dwell_core::{source_to_target, Diff, DiffStatus, Result};
 use dwell_store::SourceDir;
 
 /// Computes differences between the source directory and the target filesystem.
@@ -29,9 +29,7 @@ impl Differ {
                 .map(|c| dwell_core::hash_content(c));
 
             let source_content = source.read_entry(&entry.source_path).ok();
-            let source_hash = source_content
-                .as_ref()
-                .map(|c| dwell_core::hash_content(c));
+            let source_hash = source_content.as_ref().map(|c| dwell_core::hash_content(c));
 
             let status = match (&current_hash, &source_hash) {
                 (None, Some(_)) => DiffStatus::Added,

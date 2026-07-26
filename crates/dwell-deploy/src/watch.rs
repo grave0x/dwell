@@ -27,15 +27,19 @@ impl Watcher {
 
         let (tx, rx) = std::sync::mpsc::channel();
 
-        let mut watcher = notify::recommended_watcher(move |res: std::result::Result<Event, notify::Error>| {
-            if let Ok(event) = res {
-                let _ = tx.send(event);
-            }
-        }).map_err(watch_err)?;
-
-        watcher.configure(Config::default().with_poll_interval(std::time::Duration::from_secs(2)))
+        let mut watcher =
+            notify::recommended_watcher(move |res: std::result::Result<Event, notify::Error>| {
+                if let Ok(event) = res {
+                    let _ = tx.send(event);
+                }
+            })
             .map_err(watch_err)?;
-        watcher.watch(&self.source_dir, RecursiveMode::Recursive)
+
+        watcher
+            .configure(Config::default().with_poll_interval(std::time::Duration::from_secs(2)))
+            .map_err(watch_err)?;
+        watcher
+            .watch(&self.source_dir, RecursiveMode::Recursive)
             .map_err(watch_err)?;
 
         tracing::info!("Watching {} for changes...", self.source_dir.display());

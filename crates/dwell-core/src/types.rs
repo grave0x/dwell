@@ -54,7 +54,10 @@ impl EntryKind {
     }
 
     pub fn is_script(&self) -> bool {
-        matches!(self, EntryKind::RunOnce | EntryKind::RunBefore | EntryKind::RunAfter)
+        matches!(
+            self,
+            EntryKind::RunOnce | EntryKind::RunBefore | EntryKind::RunAfter
+        )
     }
 }
 
@@ -136,9 +139,7 @@ pub fn source_to_target(source_path: &str, home: &Path) -> PathBuf {
         .unwrap_or(source_path);
 
     // Strip suffixes
-    let relative = relative
-        .strip_suffix(".tmpl")
-        .unwrap_or(relative);
+    let relative = relative.strip_suffix(".tmpl").unwrap_or(relative);
 
     // Strip script prefixes
     let relative = relative
@@ -176,11 +177,26 @@ mod tests {
 
     #[test]
     fn test_entry_kind_detection() {
-        assert_eq!(EntryKind::from_filename("run_once_install.sh"), EntryKind::RunOnce);
-        assert_eq!(EntryKind::from_filename("run_before_check.sh"), EntryKind::RunBefore);
-        assert_eq!(EntryKind::from_filename("run_after_reload.sh"), EntryKind::RunAfter);
-        assert_eq!(EntryKind::from_filename("dwell_remove_stale"), EntryKind::Remove);
-        assert_eq!(EntryKind::from_filename("symlink_config"), EntryKind::Symlink);
+        assert_eq!(
+            EntryKind::from_filename("run_once_install.sh"),
+            EntryKind::RunOnce
+        );
+        assert_eq!(
+            EntryKind::from_filename("run_before_check.sh"),
+            EntryKind::RunBefore
+        );
+        assert_eq!(
+            EntryKind::from_filename("run_after_reload.sh"),
+            EntryKind::RunAfter
+        );
+        assert_eq!(
+            EntryKind::from_filename("dwell_remove_stale"),
+            EntryKind::Remove
+        );
+        assert_eq!(
+            EntryKind::from_filename("symlink_config"),
+            EntryKind::Symlink
+        );
         assert_eq!(EntryKind::from_filename("bashrc"), EntryKind::File);
     }
 

@@ -21,8 +21,13 @@ impl HandlebarsEngine {
     }
 
     /// Register a template string under a name for later rendering.
-    pub fn register_template(&mut self, name: &str, template: &str) -> std::result::Result<(), String> {
-        self.registry.register_template_string(name, template)
+    pub fn register_template(
+        &mut self,
+        name: &str,
+        template: &str,
+    ) -> std::result::Result<(), String> {
+        self.registry
+            .register_template_string(name, template)
             .map_err(|e| format!("Template parse error: {}", e))
     }
 }

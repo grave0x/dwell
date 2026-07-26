@@ -5,11 +5,15 @@ use dwell_core::Result;
 pub struct Validator;
 
 impl Default for Validator {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Validator {
-    pub fn new() -> Self { Validator }
+    pub fn new() -> Self {
+        Validator
+    }
 
     /// Validate a set of user values against a module's declared options.
     /// Returns Ok(()) if all values pass, or an error listing the first problem.
@@ -26,7 +30,9 @@ impl Validator {
             // Check required fields
             if opt.required && user_value.is_none() {
                 return Err(dwell_core::DwellError::Validation(format!(
-                    "{}: required option '{}' is missing", module.id(), opt.name
+                    "{}: required option '{}' is missing",
+                    module.id(),
+                    opt.name
                 )));
             }
 
@@ -39,41 +45,56 @@ impl Validator {
         Ok(())
     }
 
-    fn validate_type(&self, name: &str, opt_type: &OptionType, value: &serde_json::Value) -> Result<()> {
+    fn validate_type(
+        &self,
+        name: &str,
+        opt_type: &OptionType,
+        value: &serde_json::Value,
+    ) -> Result<()> {
         match opt_type {
             OptionType::String => {
                 if !value.is_string() {
-                    return Err(dwell_core::DwellError::Validation(
-                        format!("'{}': expected string, got {}", name, value.kind())
-                    ));
+                    return Err(dwell_core::DwellError::Validation(format!(
+                        "'{}': expected string, got {}",
+                        name,
+                        value.kind()
+                    )));
                 }
             }
             OptionType::Integer => {
                 if !value.is_number() {
-                    return Err(dwell_core::DwellError::Validation(
-                        format!("'{}': expected integer, got {}", name, value.kind())
-                    ));
+                    return Err(dwell_core::DwellError::Validation(format!(
+                        "'{}': expected integer, got {}",
+                        name,
+                        value.kind()
+                    )));
                 }
             }
             OptionType::Float => {
                 if !value.is_number() {
-                    return Err(dwell_core::DwellError::Validation(
-                        format!("'{}': expected number, got {}", name, value.kind())
-                    ));
+                    return Err(dwell_core::DwellError::Validation(format!(
+                        "'{}': expected number, got {}",
+                        name,
+                        value.kind()
+                    )));
                 }
             }
             OptionType::Boolean => {
                 if !value.is_boolean() {
-                    return Err(dwell_core::DwellError::Validation(
-                        format!("'{}': expected boolean, got {}", name, value.kind())
-                    ));
+                    return Err(dwell_core::DwellError::Validation(format!(
+                        "'{}': expected boolean, got {}",
+                        name,
+                        value.kind()
+                    )));
                 }
             }
             OptionType::Path => {
                 if !value.is_string() {
-                    return Err(dwell_core::DwellError::Validation(
-                        format!("'{}': expected path (string), got {}", name, value.kind())
-                    ));
+                    return Err(dwell_core::DwellError::Validation(format!(
+                        "'{}': expected path (string), got {}",
+                        name,
+                        value.kind()
+                    )));
                 }
             }
             OptionType::List(inner) => {
@@ -82,36 +103,47 @@ impl Validator {
                         self.validate_type(&format!("{}[{}]", name, i), inner, item)?;
                     }
                 } else {
-                    return Err(dwell_core::DwellError::Validation(
-                        format!("'{}': expected array, got {}", name, value.kind())
-                    ));
+                    return Err(dwell_core::DwellError::Validation(format!(
+                        "'{}': expected array, got {}",
+                        name,
+                        value.kind()
+                    )));
                 }
             }
             OptionType::Dict(_inner) => {
                 if !value.is_object() {
-                    return Err(dwell_core::DwellError::Validation(
-                        format!("'{}': expected object/dict, got {}", name, value.kind())
-                    ));
+                    return Err(dwell_core::DwellError::Validation(format!(
+                        "'{}': expected object/dict, got {}",
+                        name,
+                        value.kind()
+                    )));
                 }
             }
             OptionType::Enum(valid) => {
                 if let Some(s) = value.as_str() {
                     if !valid.contains(&s.to_string()) {
-                        return Err(dwell_core::DwellError::Validation(
-                            format!("'{}': invalid value '{}'. Expected one of: {}", name, s, valid.join(", "))
-                        ));
+                        return Err(dwell_core::DwellError::Validation(format!(
+                            "'{}': invalid value '{}'. Expected one of: {}",
+                            name,
+                            s,
+                            valid.join(", ")
+                        )));
                     }
                 } else {
-                    return Err(dwell_core::DwellError::Validation(
-                        format!("'{}': expected string (enum), got {}", name, value.kind())
-                    ));
+                    return Err(dwell_core::DwellError::Validation(format!(
+                        "'{}': expected string (enum), got {}",
+                        name,
+                        value.kind()
+                    )));
                 }
             }
             OptionType::SubModule => {
                 if !value.is_object() {
-                    return Err(dwell_core::DwellError::Validation(
-                        format!("'{}': expected object for sub-module, got {}", name, value.kind())
-                    ));
+                    return Err(dwell_core::DwellError::Validation(format!(
+                        "'{}': expected object for sub-module, got {}",
+                        name,
+                        value.kind()
+                    )));
                 }
             }
         }
@@ -145,8 +177,12 @@ mod tests {
 
     struct TestModule;
     impl Module for TestModule {
-        fn id(&self) -> &str { "test" }
-        fn description(&self) -> &str { "test module" }
+        fn id(&self) -> &str {
+            "test"
+        }
+        fn description(&self) -> &str {
+            "test module"
+        }
         fn options(&self) -> Vec<ModuleOption> {
             vec![
                 ModuleOption {
@@ -211,8 +247,12 @@ mod tests {
         // Create a temporary module that returns this option
         struct ColorModule;
         impl Module for ColorModule {
-            fn id(&self) -> &str { "color" }
-            fn description(&self) -> &str { "color" }
+            fn id(&self) -> &str {
+                "color"
+            }
+            fn description(&self) -> &str {
+                "color"
+            }
             fn options(&self) -> Vec<ModuleOption> {
                 vec![ModuleOption {
                     name: "color".into(),

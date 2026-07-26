@@ -37,7 +37,9 @@ fn cmd_list(out: &Output, reg: &ModuleRegistry) -> dwell_core::Result<()> {
 fn cmd_info(out: &Output, reg: &ModuleRegistry, name: &str) -> dwell_core::Result<()> {
     let module = reg.get(name).ok_or_else(|| {
         dwell_core::DwellError::Module(format!(
-            "Unknown module: {}. Available: {}", name, reg.list().join(", ")
+            "Unknown module: {}. Available: {}",
+            name,
+            reg.list().join(", ")
         ))
     })?;
 
@@ -47,22 +49,30 @@ fn cmd_info(out: &Output, reg: &ModuleRegistry, name: &str) -> dwell_core::Resul
 
     for opt in module.options() {
         let req = if opt.required { " [required]" } else { "" };
-        let default = opt.default
+        let default = opt
+            .default
             .as_ref()
             .map(|v| format!(" [default: {}]", v))
             .unwrap_or_default();
-        let example = opt.example
+        let example = opt
+            .example
             .as_ref()
             .map(|e| format!(" [e.g. {}]", e))
             .unwrap_or_default();
-        out.info(&format!("  --{}: {}{}{}{}",
-            opt.name, opt.description, req, default, example));
+        out.info(&format!(
+            "  --{}: {}{}{}{}",
+            opt.name, opt.description, req, default, example
+        ));
     }
 
     Ok(())
 }
 
-fn cmd_validate(out: &Output, reg: &ModuleRegistry, cfg: &dwell_core::Config) -> dwell_core::Result<()> {
+fn cmd_validate(
+    out: &Output,
+    reg: &ModuleRegistry,
+    cfg: &dwell_core::Config,
+) -> dwell_core::Result<()> {
     let validator = dwell_module::Validator::new();
     let module_config = &cfg.modules;
 

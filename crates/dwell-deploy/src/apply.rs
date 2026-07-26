@@ -3,7 +3,9 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use dwell_core::{ApplyAction, ApplyResult, Entry, EntryKind, Result, hash_content, source_to_target};
+use dwell_core::{
+    hash_content, source_to_target, ApplyAction, ApplyResult, Entry, EntryKind, Result,
+};
 use dwell_store::DeployState;
 use dwell_template::TemplateRegistry;
 
@@ -100,8 +102,7 @@ impl Deployer {
                 let content = if entry.encrypted {
                     raw // decrypt later
                 } else if self.templates.is_template(&entry.source_path) {
-                    let template_str =
-                        String::from_utf8(raw).unwrap_or_default();
+                    let template_str = String::from_utf8(raw).unwrap_or_default();
                     self.templates
                         .engine_for_file(&entry.source_path)
                         .render(&template_str, data)?

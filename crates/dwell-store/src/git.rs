@@ -16,26 +16,38 @@ pub struct GitRepo {
 impl GitRepo {
     pub fn init(path: &Path) -> Result<Self> {
         let repo = git2::Repository::init_bare(path).map_err(|e| {
-            DwellError::Git(format!("Failed to init bare repo at {}: {}", path.display(), e))
+            DwellError::Git(format!(
+                "Failed to init bare repo at {}: {}",
+                path.display(),
+                e
+            ))
         })?;
         {
             let mut config = repo.config().map_err(git_err)?;
-            config.set_str("status.showUntrackedFiles", "no").map_err(git_err)?;
+            config
+                .set_str("status.showUntrackedFiles", "no")
+                .map_err(git_err)?;
         }
-        Ok(GitRepo { path: path.to_path_buf() })
+        Ok(GitRepo {
+            path: path.to_path_buf(),
+        })
     }
 
     pub fn clone(url: &str, path: &Path) -> Result<Self> {
         git2::Repository::clone(url, path)
             .map_err(|e| DwellError::Git(format!("Clone {}: {}", url, e)))?;
-        Ok(GitRepo { path: path.to_path_buf() })
+        Ok(GitRepo {
+            path: path.to_path_buf(),
+        })
     }
 
     pub fn open(path: &Path) -> Result<Self> {
         git2::Repository::open(path).map_err(|e| {
             DwellError::Git(format!("Not a git repository at {}: {}", path.display(), e))
         })?;
-        Ok(GitRepo { path: path.to_path_buf() })
+        Ok(GitRepo {
+            path: path.to_path_buf(),
+        })
     }
 
     pub fn add(&self, relative_path: &str) -> Result<()> {
@@ -60,7 +72,14 @@ impl GitRepo {
         let parent_refs: Vec<&git2::Commit<'_>> = parents.iter().collect();
 
         let commit_oid = repo
-            .commit(Some("HEAD"), &signature, &signature, message, &tree, &parent_refs[..])
+            .commit(
+                Some("HEAD"),
+                &signature,
+                &signature,
+                message,
+                &tree,
+                &parent_refs[..],
+            )
             .map_err(git_err)?;
 
         Ok(commit_oid.to_string())
@@ -100,7 +119,8 @@ impl GitRepo {
     pub fn add_all(&self) -> Result<()> {
         let repo = git2::Repository::open(&self.path).map_err(git_err)?;
         let mut index = repo.index().map_err(git_err)?;
-        index.add_all(["*"].iter(), git2::IndexAddOption::DEFAULT, None)
+        index
+            .add_all(["*"].iter(), git2::IndexAddOption::DEFAULT, None)
             .map_err(git_err)?;
         index.write().map_err(git_err)?;
         Ok(())
@@ -129,14 +149,16 @@ impl GitRepo {
         let head = repo.head().map_err(git_err)?;
         let branch = head.shorthand().unwrap_or("main").to_string();
 
-        let mut remote = repo.find_remote("origin").map_err(|_| {
-            DwellError::Git("No remote 'origin' configured".into())
-        })?;
+        let mut remote = repo
+            .find_remote("origin")
+            .map_err(|_| DwellError::Git("No remote 'origin' configured".into()))?;
 
         // Push the current branch
         let refspec = format!("refs/heads/{}:refs/heads/{}", branch, branch);
         let mut push_opts = git2::PushOptions::new();
-        remote.push(&[&refspec], Some(&mut push_opts)).map_err(git_err)?;
+        remote
+            .push(&[&refspec], Some(&mut push_opts))
+            .map_err(git_err)?;
 
         Ok(())
     }

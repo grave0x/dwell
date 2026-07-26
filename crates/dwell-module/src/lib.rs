@@ -4,9 +4,9 @@
 //! inspired by home-manager's module system but using TOML + Rhai/Lua
 //! instead of Nix.
 
+pub mod builtins;
 pub mod module;
 pub mod validation;
-pub mod builtins;
 
 pub use module::ModuleRegistry;
 pub use validation::Validator;

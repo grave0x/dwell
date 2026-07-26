@@ -38,7 +38,9 @@ impl PackageManager for AptBackend {
         let output = Command::new("apt")
             .args(["list", "--installed"])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("apt list failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("apt list failed: {}", e))
+            })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let mut packages = Vec::new();
@@ -71,7 +73,9 @@ impl PackageManager for AptBackend {
         let output = Command::new("apt-get")
             .args(["-y", "install", package])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("apt install failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("apt install failed: {}", e))
+            })?;
 
         Ok(output.status.success())
     }
@@ -80,7 +84,9 @@ impl PackageManager for AptBackend {
         let output = Command::new("apt-get")
             .args(["-y", "remove", package])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("apt remove failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("apt remove failed: {}", e))
+            })?;
 
         Ok(output.status.success())
     }
@@ -89,7 +95,9 @@ impl PackageManager for AptBackend {
         let output = Command::new("apt-cache")
             .args(["search", query])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("apt-cache search failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("apt-cache search failed: {}", e))
+            })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let packages = stdout

@@ -38,7 +38,9 @@ impl PackageManager for BrewBackend {
         let output = Command::new("brew")
             .args(["list", "--formula", "-1"])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("brew list failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("brew list failed: {}", e))
+            })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let packages = stdout
@@ -60,7 +62,9 @@ impl PackageManager for BrewBackend {
         let output = Command::new("brew")
             .args(["install", package])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("brew install failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("brew install failed: {}", e))
+            })?;
 
         Ok(output.status.success())
     }
@@ -69,7 +73,9 @@ impl PackageManager for BrewBackend {
         let output = Command::new("brew")
             .args(["uninstall", package])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("brew uninstall failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("brew uninstall failed: {}", e))
+            })?;
 
         Ok(output.status.success())
     }
@@ -78,7 +84,9 @@ impl PackageManager for BrewBackend {
         let output = Command::new("brew")
             .args(["search", query])
             .output()
-            .map_err(|e| dwell_core::DwellError::PackageManager(format!("brew search failed: {}", e)))?;
+            .map_err(|e| {
+                dwell_core::DwellError::PackageManager(format!("brew search failed: {}", e))
+            })?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
         let packages = stdout

@@ -5,11 +5,15 @@ use dwell_core::{Entry, EntryKind, Result};
 pub struct GitModule;
 
 impl Default for GitModule {
-    fn default() -> Self { Self::new() }
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl GitModule {
-    pub fn new() -> Self { GitModule }
+    pub fn new() -> Self {
+        GitModule
+    }
 }
 
 impl Module for GitModule {
@@ -115,8 +119,9 @@ impl Module for GitModule {
     }
 
     fn generate(&self, values: &serde_json::Value) -> Result<Vec<Entry>> {
-        let obj = values.as_object()
-            .ok_or_else(|| dwell_core::DwellError::Module("git module: values must be a JSON object".into()))?;
+        let obj = values.as_object().ok_or_else(|| {
+            dwell_core::DwellError::Module("git module: values must be a JSON object".into())
+        })?;
 
         let mut lines = vec![];
         lines.push("[user]".to_string());
@@ -181,7 +186,11 @@ impl Module for GitModule {
     }
 }
 
-fn get_str<'a>(obj: &'a serde_json::Map<String, serde_json::Value>, key: &str, default: &'a str) -> String {
+fn get_str<'a>(
+    obj: &'a serde_json::Map<String, serde_json::Value>,
+    key: &str,
+    default: &'a str,
+) -> String {
     obj.get(key)
         .and_then(|v| v.as_str())
         .map(|s| s.to_string())
