@@ -351,11 +351,18 @@ fn main() {
     // Determine log level
     let level = cli.log_level.clone().unwrap_or_else(|| {
         match cli.verbose {
-            0 => if cli.quiet { "error" } else { "warn" },
+            0 => {
+                if cli.quiet {
+                    "error"
+                } else {
+                    "warn"
+                }
+            }
             1 => "info",
             2 => "debug",
             _ => "trace",
-        }.to_string()
+        }
+        .to_string()
     });
 
     // Configure tracing subscriber with optional file output
@@ -371,7 +378,11 @@ fn main() {
             .append(true)
             .open(log_path)
             .unwrap_or_else(|e| {
-                eprintln!("dwell: warning: cannot open log file {}: {}", log_path.display(), e);
+                eprintln!(
+                    "dwell: warning: cannot open log file {}: {}",
+                    log_path.display(),
+                    e
+                );
                 // Fallback to stderr using /dev/null as a dummy that won't matter
                 std::fs::File::create("/dev/null").unwrap()
             });

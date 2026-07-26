@@ -21,14 +21,25 @@ impl Output {
                 _ => None,
             })
             .unwrap_or_else(|| {
-                if quiet { 1 } else { 3u8.saturating_add(verbose).min(5) }
+                if quiet {
+                    1
+                } else {
+                    3u8.saturating_add(verbose).min(5)
+                }
             });
-        Output { json_mode, verbose, quiet, level }
+        Output {
+            json_mode,
+            verbose,
+            quiet,
+            level,
+        }
     }
 
     /// Debug — dim blue dot, only at -v or --log-level=debug
     pub fn debug(&self, msg: &str) {
-        if self.level < 4 { return; }
+        if self.level < 4 {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"debug","message":"{}"}}"#, msg);
         } else {
@@ -38,7 +49,9 @@ impl Output {
 
     /// Trace — dim magenta hash, only at -vv or --log-level=trace
     pub fn trace(&self, msg: &str) {
-        if self.level < 5 { return; }
+        if self.level < 5 {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"trace","message":"{}"}}"#, msg);
         } else {
@@ -48,7 +61,9 @@ impl Output {
 
     /// Section header — bright cyan, bold
     pub fn section(&self, msg: &str) {
-        if self.level < 3 { return; }
+        if self.level < 3 {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"section","message":"{}"}}"#, msg);
         } else {
@@ -58,7 +73,9 @@ impl Output {
 
     /// Info — blue arrow, dim message
     pub fn info(&self, msg: &str) {
-        if self.level < 3 { return; }
+        if self.level < 3 {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"info","message":"{}"}}"#, msg);
         } else {
@@ -68,7 +85,9 @@ impl Output {
 
     /// Success — green checkmark, green message
     pub fn success(&self, msg: &str) {
-        if self.level < 3 { return; }
+        if self.level < 3 {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"success","message":"{}"}}"#, msg);
         } else {
@@ -78,7 +97,9 @@ impl Output {
 
     /// Warning — yellow exclamation, yellow message
     pub fn warn(&self, msg: &str) {
-        if self.level < 2 { return; }
+        if self.level < 2 {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"warn","message":"{}"}}"#, msg);
         } else {
@@ -88,19 +109,30 @@ impl Output {
 
     /// Error — red X, red message
     pub fn error(&self, msg: &str) {
-        if self.level < 1 { return; }
+        if self.level < 1 {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"error","message":"{}"}}"#, msg);
         } else {
-            eprintln!(" {} {}", style("✗").red().bright(), style(msg).red().bright());
+            eprintln!(
+                " {} {}",
+                style("✗").red().bright(),
+                style(msg).red().bright()
+            );
         }
     }
 
     /// Step indicator — bold magenta for phase numbers
     pub fn step(&self, phase: &str, msg: &str) {
-        if self.level < 3 { return; }
+        if self.level < 3 {
+            return;
+        }
         if self.json_mode {
-            println!(r#"{{"level":"step","phase":"{}","message":"{}"}}"#, phase, msg);
+            println!(
+                r#"{{"level":"step","phase":"{}","message":"{}"}}"#,
+                phase, msg
+            );
         } else {
             eprintln!(" {} {}", style(phase).magenta().bright(), style(msg).bold());
         }
@@ -108,7 +140,9 @@ impl Output {
 
     /// Apply result — colored per action type
     pub fn apply_result(&self, result: &dwell_core::ApplyResult) {
-        if self.level < 3 { return; }
+        if self.level < 3 {
+            return;
+        }
         if self.json_mode {
             println!("{}", serde_json::to_string(result).unwrap_or_default());
             return;
@@ -125,13 +159,20 @@ impl Output {
             eprintln!(" {} {}", icon, path);
         } else {
             let err = result.error.as_deref().unwrap_or("unknown error");
-            eprintln!(" {} {} — {}", style("✗").red().bright(), path, style(err).red().dim());
+            eprintln!(
+                " {} {} — {}",
+                style("✗").red().bright(),
+                path,
+                style(err).red().dim()
+            );
         }
     }
 
     /// Title bar — prominent header with surrounding lines
     pub fn title(&self, msg: &str) {
-        if self.level < 3 { return; }
+        if self.level < 3 {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"title","message":"{}"}}"#, msg);
         } else {
@@ -144,7 +185,9 @@ impl Output {
 
     /// Colored key-value pair
     pub fn kv(&self, key: &str, value: &str) {
-        if self.level < 4 { return; }
+        if self.level < 4 {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"kv","key":"{}","value":"{}"}}"#, key, value);
         } else {
@@ -154,7 +197,9 @@ impl Output {
 
     /// File path — underlined for emphasis
     pub fn path(&self, path: &str) {
-        if self.level < 3 { return; }
+        if self.level < 3 {
+            return;
+        }
         if self.json_mode {
             println!(r#"{{"level":"path","path":"{}"}}"#, path);
         } else {

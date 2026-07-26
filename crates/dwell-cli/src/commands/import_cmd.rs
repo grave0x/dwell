@@ -1,28 +1,68 @@
-use std::path::Path;
 use std::fs;
+use std::path::Path;
 
 use crate::commands::CliRef;
 use crate::output::Output;
 
 /// Known config directory names commonly found in dotfiles repos.
 const CONFIG_DIRS: &[&str] = &[
-    "ags", "alacritty", "btop", "cava", "dunst", "fastfetch", "fish",
-    "foot", "gtk-2.0", "gtk-3.0", "gtk-4.0", "hypr", "i3", "k9s",
-    "kitty", "Kvantum", "mako", "mpd", "mpv", "neofetch", "nvim",
-    "oh-my-posh", "picom", "polybar", "qtile", "ranger", "rofi",
-    "starship", "sway", "swaylock", "tmux", "waybar", "wlogout",
-    "wofi", "xfce4", "yazi", "zathura",
+    "ags",
+    "alacritty",
+    "btop",
+    "cava",
+    "dunst",
+    "fastfetch",
+    "fish",
+    "foot",
+    "gtk-2.0",
+    "gtk-3.0",
+    "gtk-4.0",
+    "hypr",
+    "i3",
+    "k9s",
+    "kitty",
+    "Kvantum",
+    "mako",
+    "mpd",
+    "mpv",
+    "neofetch",
+    "nvim",
+    "oh-my-posh",
+    "picom",
+    "polybar",
+    "qtile",
+    "ranger",
+    "rofi",
+    "starship",
+    "sway",
+    "swaylock",
+    "tmux",
+    "waybar",
+    "wlogout",
+    "wofi",
+    "xfce4",
+    "yazi",
+    "zathura",
 ];
 
 /// Directories to skip (wallpapers, backgrounds, large media, version control).
 const SKIP_DIRS: &[&str] = &[
-    "backgrounds", "wallpapers", "wallpaper", "wall", "Pictures",
-    "Screenshots", "previews", ".git", ".github", ".previews",
+    "backgrounds",
+    "wallpapers",
+    "wallpaper",
+    "wall",
+    "Pictures",
+    "Screenshots",
+    "previews",
+    ".git",
+    ".github",
+    ".previews",
 ];
 
 /// File patterns at repo root that look like home-relative dotfiles.
 fn is_home_dotfile(name: &str) -> bool {
-    name.starts_with('.') && !name.starts_with(".git")
+    name.starts_with('.')
+        && !name.starts_with(".git")
         && !name.starts_with(".github")
         && !name.starts_with(".previews")
 }
@@ -40,7 +80,8 @@ pub fn run(
     out.title(&format!("Importing: {}", url));
 
     // Extract repo name from URL
-    let repo_name = url.trim_end_matches(".git")
+    let repo_name = url
+        .trim_end_matches(".git")
         .split('/')
         .last()
         .unwrap_or("dotfiles")
@@ -141,7 +182,9 @@ pub fn run(
     fs::remove_dir_all(&tmp_dir).ok();
 
     // Summary
-    out.info(&format!("Run 'dwell apply' to deploy, or 'dwell diff' to preview"));
+    out.info(&format!(
+        "Run 'dwell apply' to deploy, or 'dwell diff' to preview"
+    ));
     Ok(())
 }
 
@@ -185,7 +228,12 @@ fn detect_structure(repo_root: &Path) -> RepoStructure {
 
     let has_dotfiles_dir = repo_root.join("dotfiles").is_dir();
 
-    match (has_config_subdirs, has_home_configs_dir, has_dotfiles_dir, has_dotfiles_at_root) {
+    match (
+        has_config_subdirs,
+        has_home_configs_dir,
+        has_dotfiles_dir,
+        has_dotfiles_at_root,
+    ) {
         (true, _, _, _) => RepoStructure::DirectConfig,
         (_, true, _, _) => RepoStructure::HomeConfigsDir,
         (_, _, true, _) => RepoStructure::DotfilesDir,
@@ -202,9 +250,17 @@ fn detect_structure(repo_root: &Path) -> RepoStructure {
 }
 
 fn has_config_looking_dirs(repo_root: &Path) -> bool {
-    fs::read_dir(repo_root).ok().map(|entries| {
-        entries.filter_map(|e| e.ok()).filter(|e| e.file_type().map(|t| t.is_dir()).unwrap_or(false)).take(10).count()
-    }).unwrap_or(0) > 2
+    fs::read_dir(repo_root)
+        .ok()
+        .map(|entries| {
+            entries
+                .filter_map(|e| e.ok())
+                .filter(|e| e.file_type().map(|t| t.is_dir()).unwrap_or(false))
+                .take(10)
+                .count()
+        })
+        .unwrap_or(0)
+        > 2
 }
 
 #[derive(Debug)]
@@ -224,7 +280,11 @@ fn discover_files(repo_root: &Path, structure: &RepoStructure, _all: bool) -> Ve
                 if dir_path.is_dir() {
                     // Check for doubled dir: name/name/
                     let doubled = dir_path.join(dir);
-                    let source_dir = if doubled.is_dir() { &doubled } else { &dir_path };
+                    let source_dir = if doubled.is_dir() {
+                        &doubled
+                    } else {
+                        &dir_path
+                    };
                     collect_dir(source_dir, &format!("dot_config/{}", dir), &mut candidates);
                 }
             }
@@ -237,7 +297,11 @@ fn discover_files(repo_root: &Path, structure: &RepoStructure, _all: bool) -> Ve
                         && !SKIP_DIRS.contains(&name.as_str())
                         && !CONFIG_DIRS.contains(&name.as_str())
                     {
-                        collect_dir(&entry.path(), &format!("dot_config/{}", name), &mut candidates);
+                        collect_dir(
+                            &entry.path(),
+                            &format!("dot_config/{}", name),
+                            &mut candidates,
+                        );
                     }
                 }
             }
@@ -277,7 +341,9 @@ fn discover_files(repo_root: &Path, structure: &RepoStructure, _all: bool) -> Ve
             if let Ok(entries) = fs::read_dir(repo_root) {
                 for entry in entries.flatten() {
                     let name = entry.file_name().to_string_lossy().to_string();
-                    if entry.file_type().map(|t| t.is_file()).unwrap_or(false) && is_home_dotfile(&name) {
+                    if entry.file_type().map(|t| t.is_file()).unwrap_or(false)
+                        && is_home_dotfile(&name)
+                    {
                         // .zshrc → dot_zshrc
                         let dwell_name = format!("dot_{}", &name[1..]);
                         candidates.push(ImportCandidate {
@@ -330,4 +396,3 @@ fn collect_dir(src_dir: &Path, prefix: &str, candidates: &mut Vec<ImportCandidat
         }
     }
 }
-
