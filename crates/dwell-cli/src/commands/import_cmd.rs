@@ -83,7 +83,7 @@ pub fn run(
     let repo_name = url
         .trim_end_matches(".git")
         .split('/')
-        .last()
+        .next_back()
         .unwrap_or("dotfiles")
         .to_string();
 
@@ -93,7 +93,7 @@ pub fn run(
         fs::remove_dir_all(&tmp_dir).ok();
     }
 
-    out.info(&format!("Cloning into temporary directory..."));
+    out.info("Cloning into temporary directory...");
     let status = std::process::Command::new("git")
         .args(["clone", "--depth", "1", &url, tmp_dir.to_str().unwrap()])
         .status()
@@ -139,14 +139,12 @@ pub fn run(
         let src = tmp_dir.join(&c.repo_path);
         let dst = source_dir.join(&c.dwell_path);
 
-        if dst.exists() {
-            if !all {
-                out.info(&format!("Skipping existing: {}", &c.dwell_path));
-                skipped += 1;
-                continue;
-            }
-            // When --all, overwrite
+        if dst.exists() && !all {
+            out.info(&format!("Skipping existing: {}", c.dwell_path));
+            skipped += 1;
+            continue;
         }
+        // When --all, overwrite
 
         if let Some(parent) = dst.parent() {
             fs::create_dir_all(parent).ok();
@@ -155,12 +153,12 @@ pub fn run(
         match fs::copy(&src, &dst) {
             Ok(_) => {
                 if cli.verbose > 0 {
-                    out.success(&format!("  {}", &c.dwell_path));
+                    out.success(&format!("  {}", c.dwell_path));
                 }
                 copied += 1;
             }
             Err(e) => {
-                out.warn(&format!("  Failed: {}: {}", &c.dwell_path, e));
+                out.warn(&format!("  Failed: {}: {}", c.dwell_path, e));
             }
         }
     }
@@ -182,9 +180,7 @@ pub fn run(
     fs::remove_dir_all(&tmp_dir).ok();
 
     // Summary
-    out.info(&format!(
-        "Run 'dwell apply' to deploy, or 'dwell diff' to preview"
-    ));
+    out.info("Run 'dwell apply' to deploy, or 'dwell diff' to preview");
     Ok(())
 }
 
