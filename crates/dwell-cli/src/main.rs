@@ -140,6 +140,12 @@ pub enum Commands {
         #[command(subcommand)]
         action: DepsCommand,
     },
+
+    /// Capture, restore, or diff system packages and tools
+    Setup {
+        #[command(subcommand)]
+        action: SetupCommand,
+    },
 }
 
 #[derive(Subcommand)]
@@ -164,6 +170,54 @@ pub enum DepsCommand {
 
     /// Check current system for missing required tools
     Audit {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum SetupCommand {
+    /// Capture all installed packages and tools to a portable manifest
+    Capture {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+
+        /// Skip system package enumeration
+        #[arg(long)]
+        no_sys_packages: bool,
+
+        /// Skip language tool enumeration
+        #[arg(long)]
+        no_lang_tools: bool,
+
+        /// Skip manual binary enumeration
+        #[arg(long)]
+        no_manual: bool,
+    },
+
+    /// Restore packages and tools from a captured manifest
+    Restore {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+
+        /// Restore system packages
+        #[arg(long)]
+        sys_packages: bool,
+
+        /// Restore language tools
+        #[arg(long)]
+        lang_tools: bool,
+
+        /// Ask before each step
+        #[arg(short, long)]
+        interactive: bool,
+    },
+
+    /// Compare current system against captured state
+    Diff {
         /// Source directory [default: ~/.local/share/dwell]
         #[arg(short, long)]
         source: Option<PathBuf>,
