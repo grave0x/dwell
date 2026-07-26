@@ -8,6 +8,7 @@ mod status;
 mod watch;
 mod package;
 mod sync;
+mod deps;
 
 /// A cheap reference-like view of CLI options, avoiding partial moves.
 pub struct CliRef {
@@ -30,6 +31,7 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
         crate::Commands::Status { source } => status::run(&cli_ref, &cfg, source),
         crate::Commands::Watch { source } => watch::run(&cli_ref, &cfg, source),
         crate::Commands::Package { action } => package::run(&cli_ref, &cfg, action),
+        crate::Commands::Deps { action } => deps::run(&cli_ref, &cfg, action),
         crate::Commands::Module { .. } => {
             eprintln!("Module management — Phase 2 (coming soon)");
             Ok(())

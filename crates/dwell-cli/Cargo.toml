@@ -4,7 +4,6 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = "Unify your dotfiles across machines with type-safe modules, cross-platform packages, and a plugin system"
-
 repository.workspace = true
 
 [package.metadata.deb]

@@ -135,6 +135,39 @@ pub enum Commands {
         #[arg(long)]
         dry_run: bool,
     },
+    /// Manage dotfile dependencies (scan, install, audit, bundle)
+    Deps {
+        #[command(subcommand)]
+        action: DepsCommand,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum DepsCommand {
+    /// Auto-detect dependencies from source entries and generate deps.toml
+    Scan {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+    },
+
+    /// Install required packages from deps.toml
+    Install {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+
+        /// Also install declared tools (not just requires)
+        #[arg(long)]
+        tools: bool,
+    },
+
+    /// Check current system for missing required tools
+    Audit {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+    },
 }
 
 #[derive(Subcommand)]
