@@ -50,7 +50,7 @@ rhai = "1"
 notify = "7"
 
 # Git
-git2 = "0.19"
+git2 = "0.21"
 
 # Secrets
 age = "0.10"
