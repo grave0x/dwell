@@ -93,4 +93,4 @@ system.cargo = ["bat", "ripgrep"]
 
 ## Related
 
-- **Dotfiles repo**: [github.com/grave-configs/dotfiles](https://github.com/grave-configs/dotfiles) — my personal dotfiles managed by dwell
+
