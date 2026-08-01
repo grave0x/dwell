@@ -5,11 +5,14 @@ mod apply;
 mod deploy;
 mod deps;
 mod diff;
+mod generation_cmd;
 mod import_cmd;
 mod init;
 mod module_cmd;
 mod package;
+mod plugin_cmd;
 mod reset;
+mod secret_cmd;
 mod setup;
 mod status;
 mod sync;
@@ -45,7 +48,11 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
     let cfg = dwell_core::Config::load(&_config)?;
 
     match command {
-        crate::Commands::Apply { source, force } => apply::run(&cli_ref, &cfg, source, force),
+        crate::Commands::Apply {
+            source,
+            force,
+            interactive,
+        } => apply::run(&cli_ref, &cfg, source, force, interactive),
         crate::Commands::Diff { source } => diff::run(&cli_ref, &cfg, source),
         crate::Commands::Init {
             source,
@@ -70,7 +77,17 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
             stray,
             source,
             dry_run,
-        } => reset::run(&cli_ref, &cfg, path, all, stray, source, dry_run),
+            interactive,
+        } => reset::run(
+            &cli_ref,
+            &cfg,
+            path,
+            all,
+            stray,
+            source,
+            dry_run,
+            interactive,
+        ),
         crate::Commands::Completion { shell } => {
             use clap::CommandFactory;
             let mut cmd = crate::Cli::command();
@@ -82,18 +99,9 @@ pub fn run(cli: Cli) -> dwell_core::Result<()> {
         crate::Commands::Import { url, all, dry_run } => {
             import_cmd::run(&cli_ref, &cfg, url, all, dry_run)
         }
-        crate::Commands::Plugin { .. } => {
-            eprintln!("Plugin management — Phase 4 (coming soon)");
-            Ok(())
-        }
-        crate::Commands::Secret { .. } => {
-            eprintln!("Secret management — Phase 3 (coming soon)");
-            Ok(())
-        }
-        crate::Commands::Generation { .. } => {
-            eprintln!("Generation management — Phase 5 (coming soon)");
-            Ok(())
-        }
+        crate::Commands::Plugin { action } => plugin_cmd::run(&cli_ref, &cfg, action),
+        crate::Commands::Secret { action } => secret_cmd::run(&cli_ref, &cfg, action),
+        crate::Commands::Generation { action } => generation_cmd::run(&cli_ref, &cfg, action),
         crate::Commands::Doctor => {
             doctor::run(&cli_ref);
             Ok(())

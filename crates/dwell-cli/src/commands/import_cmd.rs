@@ -108,6 +108,8 @@ pub fn run(
     // Detect structure
     let structure = detect_structure(&tmp_dir);
     out.info(&format!("Detected structure: {}", structure.description()));
+    let repo_style = detect_repo_style(&tmp_dir);
+    out.info(&format!("Detected migration style: {}", repo_style));
 
     // Discover files to import
     let candidates = discover_files(&tmp_dir, &structure, all);
@@ -135,13 +137,23 @@ pub fn run(
     // Copy files into dwell source directory
     let mut copied = 0;
     let mut skipped = 0;
+    let mut skipped_existing = 0;
+    let mut skipped_binary = 0;
     for c in &candidates {
         let src = tmp_dir.join(&c.repo_path);
         let dst = source_dir.join(&c.dwell_path);
 
+        if is_binary_or_large(&src) {
+            out.info(&format!("Skipping binary/large file: {}", c.repo_path));
+            skipped += 1;
+            skipped_binary += 1;
+            continue;
+        }
+
         if dst.exists() && !all {
             out.info(&format!("Skipping existing: {}", c.dwell_path));
             skipped += 1;
+            skipped_existing += 1;
             continue;
         }
         // When --all, overwrite
@@ -175,6 +187,21 @@ pub fn run(
         "Import complete: {} copied, {} skipped",
         copied, skipped
     ));
+    if skipped_existing > 0 || skipped_binary > 0 {
+        out.info("Conflict summary:");
+        if skipped_existing > 0 {
+            out.info(&format!(
+                "  Existing target conflicts: {} (rerun with --all to overwrite)",
+                skipped_existing
+            ));
+        }
+        if skipped_binary > 0 {
+            out.info(&format!(
+                "  Binary/large files skipped: {} (import manually if needed)",
+                skipped_binary
+            ));
+        }
+    }
 
     // Cleanup
     fs::remove_dir_all(&tmp_dir).ok();
@@ -182,6 +209,18 @@ pub fn run(
     // Summary
     out.info("Run 'dwell apply' to deploy, or 'dwell diff' to preview");
     Ok(())
+}
+
+fn detect_repo_style(repo_root: &Path) -> &'static str {
+    if repo_root.join(".chezmoi.toml.tmpl").exists()
+        || repo_root.join(".chezmoi.yaml.toml").exists()
+    {
+        "chezmoi"
+    } else if repo_root.join(".stow-local-ignore").exists() || repo_root.join(".stowrc").exists() {
+        "stow"
+    } else {
+        "manual/mixed"
+    }
 }
 
 /// Describes the layout structure of a dotfiles repo.
@@ -391,4 +430,19 @@ fn collect_dir(src_dir: &Path, prefix: &str, candidates: &mut Vec<ImportCandidat
             }
         }
     }
+}
+
+fn is_binary_or_large(path: &Path) -> bool {
+    const MAX_IMPORT_SIZE: u64 = 2 * 1024 * 1024;
+    if let Ok(meta) = std::fs::metadata(path) {
+        if meta.len() > MAX_IMPORT_SIZE {
+            return true;
+        }
+    }
+
+    let bytes = match std::fs::read(path) {
+        Ok(b) => b,
+        Err(_) => return true,
+    };
+    bytes.iter().take(4096).any(|b| *b == 0)
 }

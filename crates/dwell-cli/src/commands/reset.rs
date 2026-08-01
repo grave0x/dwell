@@ -1,5 +1,6 @@
 use std::path::{Path, PathBuf};
 
+use dialoguer::Confirm;
 use dwell_core::{source_to_target, Entry, EntryKind};
 use dwell_store::SourceDir;
 
@@ -14,6 +15,7 @@ pub fn run(
     stray: bool,
     source: Option<PathBuf>,
     dry_run: bool,
+    interactive: bool,
 ) -> dwell_core::Result<()> {
     let out = Output::new(cli.json, cli.verbose, cli.quiet, cli.log_level.clone());
     let source_dir = crate::commands::resolve_source(cli, source)?;
@@ -47,7 +49,7 @@ pub fn run(
                 if dry_run {
                     out.info("  (dry-run — would re-apply from source)");
                 } else {
-                    reset_entry(&sd, entry, &source_dir, &home, &out)?;
+                    reset_entry(&sd, entry, &source_dir, &home, &out, interactive)?;
                     out.success(&format!("  Reset: {}", target_path.display()));
                 }
             }
@@ -70,7 +72,7 @@ pub fn run(
                 let t = source_to_target(&entry.source_path, &home);
                 out.info(&format!("  Would reset: {}", t.display()));
             } else {
-                match reset_entry(&sd, entry, &source_dir, &home, &out) {
+                match reset_entry(&sd, entry, &source_dir, &home, &out, interactive) {
                     Ok(_) => count += 1,
                     Err(e) => out.warn(&format!("  Failed: {}: {}", entry.source_path, e)),
                 }
@@ -127,9 +129,25 @@ fn reset_entry(
     _source_root: &Path,
     home: &Path,
     out: &Output,
+    interactive: bool,
 ) -> dwell_core::Result<()> {
     let target = source_to_target(&entry.source_path, home);
+    if interactive && target.exists() && target.is_file() {
+        let prompt = format!("Reset {} from source?", target.display());
+        let confirmed = Confirm::new()
+            .with_prompt(prompt)
+            .default(false)
+            .interact()
+            .unwrap_or(false);
+        if !confirmed {
+            out.info(&format!("  Skipped: {}", target.display()));
+            return Ok(());
+        }
+    }
     let raw = sd.read_entry(&entry.source_path)?;
+    if let Some(parent) = target.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
     std::fs::write(&target, &raw)?;
     out.success(&format!("  Reset: {}", target.display()));
     Ok(())

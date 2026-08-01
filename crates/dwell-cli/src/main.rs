@@ -55,6 +55,10 @@ pub enum Commands {
         /// Force overwrite even if content differs
         #[arg(short, long)]
         force: bool,
+
+        /// Ask before overwriting conflicting files
+        #[arg(short, long)]
+        interactive: bool,
     },
 
     /// Show differences between source and filesystem
@@ -194,6 +198,10 @@ pub enum Commands {
         /// Preview without modifying
         #[arg(long)]
         dry_run: bool,
+
+        /// Ask before overwriting existing files
+        #[arg(short, long)]
+        interactive: bool,
     },
 
     /// Generate shell completion scripts
@@ -239,6 +247,13 @@ pub enum DepsCommand {
 
     /// Check current system for missing required tools
     Audit {
+        /// Source directory [default: ~/.local/share/dwell]
+        #[arg(short, long)]
+        source: Option<PathBuf>,
+    },
+
+    /// Export a lockfile with resolved package mappings
+    Export {
         /// Source directory [default: ~/.local/share/dwell]
         #[arg(short, long)]
         source: Option<PathBuf>,
@@ -318,7 +333,7 @@ pub enum ModuleCommand {
 #[derive(Subcommand)]
 pub enum PluginCommand {
     /// Install a plugin
-    Install { name: String },
+    Install { source: String },
     /// List installed plugins
     List,
     /// Initialize a new plugin project

@@ -17,6 +17,7 @@ pub fn run(
         crate::DepsCommand::Scan { source } => cmd_scan(&out, source),
         crate::DepsCommand::Install { source, tools } => cmd_install(&out, source, tools),
         crate::DepsCommand::Audit { source } => cmd_audit(&out, source),
+        crate::DepsCommand::Export { source } => cmd_export(&out, source),
     }
 }
 
@@ -176,4 +177,70 @@ fn cmd_audit(out: &Output, source: Option<PathBuf>) -> dwell_core::Result<()> {
 
     out.success(&format!("{} found, {} missing", found, missing));
     Ok(())
+}
+
+#[derive(serde::Serialize)]
+struct DepsLock {
+    generated_at: u64,
+    backend: String,
+    packages: Vec<String>,
+    tools: Vec<String>,
+    command_map: std::collections::BTreeMap<String, String>,
+}
+
+fn cmd_export(out: &Output, source: Option<PathBuf>) -> dwell_core::Result<()> {
+    let source_dir = resolve_source(source)?;
+    let deps = DepsConfig::load(&source_dir).map_err(|e| {
+        dwell_core::DwellError::InvalidConfig(format!("Failed to load .dwell/deps.toml: {}", e))
+    })?;
+    let reg = dwell_package::PackageManagerRegistry::new();
+    let backend = reg
+        .detect()
+        .map(|b| b.id().to_string())
+        .unwrap_or_else(|| "unknown".to_string());
+
+    let packages = deps.all_requires();
+    let tools = deps.all_tools();
+    let mut command_map = std::collections::BTreeMap::new();
+    for cmd in packages.iter().chain(tools.iter()) {
+        command_map.insert(cmd.clone(), map_command_for_backend(&backend, cmd));
+    }
+
+    let lock = DepsLock {
+        generated_at: std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs(),
+        backend,
+        packages,
+        tools,
+        command_map,
+    };
+    let out_dir = source_dir.join(".dwell");
+    std::fs::create_dir_all(&out_dir).map_err(dwell_core::DwellError::Io)?;
+    let out_path = out_dir.join("deps.lock.json");
+    let body =
+        serde_json::to_string_pretty(&lock).map_err(dwell_core::DwellError::Serialization)?;
+    std::fs::write(&out_path, body).map_err(dwell_core::DwellError::Io)?;
+    out.success(&format!("Exported {}", out_path.display()));
+    Ok(())
+}
+
+fn map_command_for_backend(backend: &str, command: &str) -> String {
+    let canonical = match command {
+        "rg" => "ripgrep",
+        "fd" => "fd-find",
+        "node" => "nodejs",
+        "python" => "python3",
+        other => other,
+    };
+
+    match (backend, canonical) {
+        ("apt", "fd-find") => "fd-find".to_string(),
+        ("apt", "python3") => "python3".to_string(),
+        ("apt", "nodejs") => "nodejs".to_string(),
+        ("pacman", "fd-find") => "fd".to_string(),
+        ("brew", "fd-find") => "fd".to_string(),
+        (_, other) => other.to_string(),
+    }
 }

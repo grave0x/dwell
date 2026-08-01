@@ -6,3 +6,6 @@ pub mod manifest;
 pub mod registry;
 pub mod sandbox;
 pub mod wasm;
+
+pub use manifest::{PluginKind, PluginManifest};
+pub use registry::{InstalledPlugin, PluginRegistry};

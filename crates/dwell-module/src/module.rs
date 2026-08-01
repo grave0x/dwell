@@ -22,6 +22,8 @@ impl ModuleRegistry {
 
         // Register built-in modules
         reg.register(Box::new(super::builtins::GitModule::new()));
+        reg.register(Box::new(super::builtins::ShellModule::new()));
+        reg.register(Box::new(super::builtins::SshModule::new()));
 
         reg
     }
