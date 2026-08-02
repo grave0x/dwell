@@ -53,7 +53,7 @@ notify = "7"
 git2 = "0.21"
 
 # Secrets
-age = "0.10"
+age = "0.12"
 
 # Plugins
 wasmtime = "47"
