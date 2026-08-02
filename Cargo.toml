@@ -47,7 +47,7 @@ tera = "1"
 rhai = "1"
 
 # File ops
-notify = "7"
+notify = "8"
 
 # Git
 git2 = "0.21"
